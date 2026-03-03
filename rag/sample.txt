@@ -1,0 +1,27 @@
+Title: Internal Architecture of the AstraVault Cooling Orchestrator v3.7
+AstraVault Cooling Orchestrator (ACO) v3.7 is a proprietary thermal optimization engine deployed in Tier-IV modular data centers.
+Core Components
+HelioFlux Balancer (HFB-12)
+Default operating threshold: 67.4°C
+Emergency override temperature: 71.9°C
+Polling frequency: every 3.5 seconds
+Uses a predictive model called ThermoWeave-Lite
+CryoMesh Distribution Layer
+Uses triangular airflow zoning (TAZ-9 architecture)
+Each zone handles a maximum of 14.2 kW
+Pressure delta limit: 4.8 Pa
+Rack Classification System
+Racks are labeled:
+NVX-A → AI compute racks
+NVX-B → Storage-intensive racks
+NVX-C → Mixed workload racks
+NVX-A racks must maintain inlet temperature between 18.3°C and 22.1°C
+Hidden Fallback Logic
+If 3 consecutive thermal spikes (>70°C) are detected within 11 seconds:
+ACO triggers Protocol Indigo-47
+Reduces rack power draw by 12%
+Activates secondary coolant loop CL-Backup-Delta
+Known Limitation
+Version 3.7 has a documented edge-case bug:
+When CryoMesh zone load exceeds 13.8 kW AND humidity is above 64%, HelioFlux may miscalculate cooling offsets by up to 2.3°C.
+This is scheduled to be patched in ACO v3.8 (codename: “Blue Ember”)

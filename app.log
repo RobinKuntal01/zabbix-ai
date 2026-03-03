@@ -1,0 +1,18 @@
+2026-02-28 17:09:39,883 INFO [llm] Intent classification result: {
+    "category": "info"
+}
+2026-02-28 17:09:39,887 INFO [main] Intent classification category: {
+    "category": "info"
+}
+2026-02-28 17:09:39,888 WARNING [main] Unknown intent category '{
+    "category": "info"
+}', defaulting to info
+2026-02-28 17:11:22,240 INFO [llm] Intent classification result: {
+      "category": "action"
+    }
+2026-02-28 17:11:22,242 INFO [main] Intent classification category: {
+      "category": "action"
+    }
+2026-02-28 17:11:22,243 WARNING [main] Unknown intent category '{
+      "category": "action"
+    }', defaulting to info

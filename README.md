@@ -146,15 +146,23 @@ pip install fastapi uvicorn faiss-cpu sentence-transformers ollama
 ollama pull mistral
 ```
 
-### 3. Build the FAISS index from PDFs
+### 3. Build the FAISS index from PDFs (optional)
 ```bash
-python pipeline/rag.py --build-index --source knowledge/pdfs/
+# Ingest a single file into the FAISS store (creates/updates rag/vector_store.pkl)
+python rag/ingest.py path/to/your-document.pdf
 ```
 
 ### 4. Run the server
 ```bash
 uvicorn main:app --reload --port 8000
 ```
+
+### 5. Upload documents via UI
+Once the server is running, visit the upload page to add more docs into the index:
+
+- 📄 http://localhost:8000/add-dox
+
+Uploaded documents are indexed into the same FAISS store used by the RAG pipeline.
 
 ---
 
@@ -176,6 +184,26 @@ uvicorn main:app --reload --port 8000
   "intent": "knowledge",
   "response": "Based on the service agreement, Tier-3 colocation carries a 99.982% uptime SLA...",
   "sources": ["yotta_sla_guide_2024.pdf — page 12"]
+}
+```
+
+### `POST /agent`
+
+Runs the ReAct-style agent loop (tool-calling) and returns a detailed trace.
+
+**Request:**
+```json
+{
+  "message": "What is the current power usage for rack RACK-C2?"
+}
+```
+
+**Response:**
+```json
+{
+  "final_answer": "RACK-C2 is near capacity at 99% (4950/5000 W)",
+  "total_steps": 3,
+  "steps": [ ... ]
 }
 ```
 

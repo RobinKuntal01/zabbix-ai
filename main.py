@@ -1,7 +1,7 @@
 import json
 from prompt import explain_realtime_metrics
 from zabbix_client import get_cpu_usage, get_power_usage
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, UploadFile, HTTPException, File
 from datetime import datetime
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +9,8 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from llm import call_ollama_chat_explain, call_ollama_chat_explain, intent_classification, generate_general_info, parse_action, generate_with_rag
 import requests  # if calling local llama / ollama
+from rag.ingest import handle_file
+from agent.react_agent import run_react_agent
 
 app = FastAPI()
  
@@ -24,6 +26,32 @@ class ChatRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def chat_ui(request: Request):
     return templates.TemplateResponse("chat.html", {"request": request})
+
+@app.get("/agent", response_class=HTMLResponse)
+async def agent_ui(request: Request):
+    return templates.TemplateResponse("agent.html", {"request": request})
+
+@app.post("/agent")
+async def agent(req: ChatRequest):
+    user_message = req.message
+    print(f"Agent : Received user message: {user_message}")
+    result = run_react_agent(user_query=user_message)
+    return JSONResponse(result)
+
+
+    
+
+
+@app.get("/add-dox", response_class=HTMLResponse)
+async def add_dox_ui(request: Request):
+    return templates.TemplateResponse("add_dox.html", {"request": request})
+
+@app.post("/upload-dox", response_class=HTMLResponse)
+async def add_dox(file: UploadFile = File(...)):
+    if not file.filename.endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+    
+    return JSONResponse(await handle_file(file))
 
 
 @app.post("/chat")
@@ -83,7 +111,53 @@ async def chat(req: ChatRequest):
     
 
 
+"""
+Add this route to your existing main.py.
+It exposes POST /agent  →  runs the ReAct loop  →  returns the full trace.
+"""
+ 
 
+from agent.react_agent import run_react_agent
+ 
+# ── Add this route ────────────────────────────────────────────────────────────
+ 
+@app.post("/agent")
+async def agent_chat(req: ChatRequest):
+    result = run_react_agent(req.message)
+    return JSONResponse(result)
+ 
+# ─────────────────────────────────────────────────────────────────────────────
+# The route returns this shape:
+#
+# {
+#   "final_answer": "RACK-C2 is at 99 % power utilisation and 27.8 °C inlet ...",
+#   "total_steps": 3,
+#   "steps": [
+#     {
+#       "step": 1,
+#       "type": "tool_call",
+#       "thought": "I need to check which servers are in RACK-C2 first.",
+#       "action": "list_servers_in_rack",
+#       "action_input": {"rack_id": "RACK-C2"},
+#       "observation": "{\"servers\": [\"PROD2\", \"PROD3\"]}"
+#     },
+#     {
+#       "step": 2,
+#       "type": "tool_call",
+#       "thought": "Now I should check power and cooling for RACK-C2.",
+#       "action": "get_rack_power",
+#       "action_input": {"rack_id": "RACK-C2"},
+#       "observation": "{\"watts\": 4950, \"capacity_watts\": 5000, \"utilisation_pct\": 99}"
+#     },
+#     {
+#       "step": 3,
+#       "type": "final_answer",
+#       "thought": "I have enough data to give a complete answer.",
+#       "content": "RACK-C2 is near capacity at 99 % (4950/5000 W) ..."
+#     }
+#   ]
+# }
+# ─────────────────────────────────────────────────────────────────────────────
 
 # @app.post("/zabbix-webhook")
 # async def zabbix_webhook(request: Request):

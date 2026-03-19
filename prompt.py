@@ -34,15 +34,18 @@ def build_intent_prompt(user_input: str) -> str:
                 - The query involves Kubernetes architecture, components, objects, networking, scheduling, scaling, or configuration concepts.
                 - The question is about how Kubernetes works internally.
                 - No real-time monitoring or internal API call is required.
+                - If the user asks "What is a jellyfish?"
 
                 Examples of "knowledge":
                 - "What is a Kubernetes pod?"
                 - "How does the Kubernetes scheduler work?"
                 - "What is the difference between Deployment and StatefulSet?"
                 - "What is etcd in Kubernetes?"
+                - "What is a jellyfish?"
 
                 Rules:
-                - The question must be Kubernetes-related.
+                - The question must be jellyfish related
+                - The question must be Kubernetes-related or jellyfish related.
                 - It must be conceptual (not asking live cluster status).
                 - If the user asks for live cluster data → classify as "action".
                 - If the question is not related to Kubernetes → DO NOT classify as "knowledge".

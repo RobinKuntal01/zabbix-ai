@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Documents (RAG)</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/add_dox.css">
+</head>
+<body>
+    <div class="upload-wrapper">
+        <div class="upload-container">
+            <div class="upload-header">
+                <h1>Upload Documents</h1>
+                <p>Upload PDFs or plain text files to add them to the RAG vector store.</p>
+                <a class="back-link" href="/">← Back to chat</a>
+            </div>
+
+            <div class="upload-body">
+                <label class="file-label" for="file-input">Choose a file</label>
+                <input id="file-input" type="file" accept=".pdf,.txt" />
+
+                <button id="upload-btn" class="upload-btn">Upload &amp; Index</button>
+
+                <div id="status" class="upload-status" aria-live="polite"></div>
+            </div>
+
+            <div class="upload-notes">
+                <p><strong>Note:</strong> Uploaded documents are indexed locally and used by the RAG pipeline for knowledge retrieval.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/add_dox.js"></script>
+</body>
+</html>

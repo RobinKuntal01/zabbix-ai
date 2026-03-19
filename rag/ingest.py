@@ -1,9 +1,36 @@
-from embeddings import get_embedding
-from vector_store import VectorStore
+import os
+
+from rag.embeddings import get_embedding
+from rag.vector_store import VectorStore
 from pypdf import PdfReader
+RAG_FOLDER = "rag"
+
 
 store = VectorStore()
 
+async def handle_file(file):
+
+    contents = await file.read()
+
+    os.makedirs(RAG_FOLDER, exist_ok=True)
+    save_path = os.path.join(RAG_FOLDER, file.filename)
+    with open(save_path, "wb") as f:
+        f.write(contents)
+    
+    file_path = os.path.join(RAG_FOLDER, file.filename)
+    pdf_text = extract_pdf_text(file_path)  
+    chunks = chunk_text(pdf_text)
+
+    add = 0
+    for chunk in chunks:
+        print(f"Processing chunk: {chunk[:50]}...")  # Print the first 50 characters of the chunk
+        embedding = get_embedding(chunk)
+        store.add(embedding, chunk)
+        add = add+1
+
+    store.save()
+
+    return {"message": f"File '{file.filename}' processed and added to vector store with {add} chunks."}
 
 
 def extract_pdf_text(file_path: str) -> str:
@@ -26,12 +53,12 @@ def chunk_text(text, chunk_size=500, overlap=100):
 
     return chunks
 
-pdf_text = extract_pdf_text("Concepts.pdf")
-chunks = chunk_text(pdf_text)
+# pdf_text = extract_pdf_text("Concepts.pdf")
+# chunks = chunk_text(pdf_text)
 
-for chunk in chunks:
-    embedding = get_embedding(chunk)
-    store.add(embedding, chunk)
+# for chunk in chunks:
+#     embedding = get_embedding(chunk)
+#     store.add(embedding, chunk)
 
 
 # with open("sample.txt", "r", encoding="utf-8") as f:
@@ -43,4 +70,3 @@ for chunk in chunks:
 #     embedding = get_embedding(doc)
 #     store.add(embedding, doc)
 
-store.save()

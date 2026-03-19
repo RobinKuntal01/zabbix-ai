@@ -25,10 +25,11 @@ class VectorStore:
 
         return results
 
-    def save(self, path="vector_store.pkl"):
+    def save(self, path="rag/vector_store.pkl"):
         with open(path, "wb") as f:
             pickle.dump((self.index, self.text_chunks), f)
 
     def load(self, path="rag/vector_store.pkl"):
         with open(path, "rb") as f:
             self.index, self.text_chunks = pickle.load(f)
+            

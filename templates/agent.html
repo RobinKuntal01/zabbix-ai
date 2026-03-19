@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReAct Agent — Trace Viewer</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Sora:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:        #0b0f18;
+    --surface:   #111827;
+    --border:    #1e293b;
+    --muted:     #4b5675;
+    --text:      #cbd5e1;
+    --bright:    #f1f5f9;
+
+    --purple:    #a78bfa;
+    --amber:     #fbbf24;
+    --teal:      #2dd4bf;
+    --green:     #34d399;
+    --red:       #f87171;
+    --blue:      #60a5fa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    font-family: 'Sora', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 16px 64px;
+  }
+
+  /* subtle grid bg */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; width: 100%; max-width: 760px; }
+
+  /* ── Header ───────────────────────────── */
+  header { text-align: center; margin-bottom: 36px; }
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--purple);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--bright);
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+  }
+  header p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ── Input bar ────────────────────────── */
+  .input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  input[type="text"] {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--bright);
+    font-family: 'Sora', sans-serif;
+    font-size: 14px;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="text"]:focus { border-color: var(--purple); }
+  button#run {
+    background: var(--purple);
+    border: none;
+    border-radius: 10px;
+    color: #1a0040;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 12px 24px;
+    transition: opacity .2s, transform .1s;
+  }
+  button#run:hover  { opacity: 0.85; }
+  button#run:active { transform: scale(.97); }
+  button#run:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── Sample queries ───────────────────── */
+  .samples {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .sample-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    transition: color .15s, border-color .15s;
+  }
+  .sample-chip:hover { color: var(--bright); border-color: var(--muted); }
+
+  /* ── Trace container ──────────────────── */
+  #trace { display: flex; flex-direction: column; gap: 0; }
+
+  /* ── Step card ────────────────────────── */
+  .step-card {
+    position: relative;
+    padding-left: 44px;
+    padding-bottom: 28px;
+    animation: fadeUp .35s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* vertical line */
+  .step-card::before {
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 34px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .step-card:last-child::before { display: none; }
+
+  /* circle badge */
+  .step-dot {
+    position: absolute;
+    left: 8px;
+    top: 14px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+  }
+  .dot-thought    { border-color: var(--purple); color: var(--purple); background: rgba(167,139,250,.1); }
+  .dot-tool       { border-color: var(--amber);  color: var(--amber);  background: rgba(251,191,36,.1); }
+  .dot-observe    { border-color: var(--teal);   color: var(--teal);   background: rgba(45,212,191,.1); }
+  .dot-answer     { border-color: var(--green);  color: var(--green);  background: rgba(52,211,153,.1); }
+  .dot-err        { border-color: var(--red);    color: var(--red);    background: rgba(248,113,113,.1); }
+
+  /* card box */
+  .step-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-top: 6px;
+  }
+  .step-label {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+  }
+  .label-thought { background: rgba(167,139,250,.12); color: var(--purple); }
+  .label-tool    { background: rgba(251,191,36,.12);  color: var(--amber); }
+  .label-observe { background: rgba(45,212,191,.12);  color: var(--teal); }
+  .label-answer  { background: rgba(52,211,153,.12);  color: var(--green); border: 1px solid rgba(52,211,153,.3); }
+  .label-err     { background: rgba(248,113,113,.12); color: var(--red); }
+
+  .step-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .step-text.bright { color: var(--bright); }
+
+  .kv-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    flex-wrap: wrap;
+  }
+  .kv-key {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding-top: 2px;
+    min-width: 70px;
+  }
+  .kv-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--bright);
+    flex: 1;
+    word-break: break-all;
+  }
+  .kv-val.json {
+    background: rgba(255,255,255,.03);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0;
+  }
+
+  /* ── Stats bar ────────────────────────── */
+  #stats {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-val   { color: var(--bright); font-weight: 600; }
+
+  /* ── Spinner ──────────────────────────── */
+  .thinking {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .spin {
+    width: 14px; height: 14px;
+    border: 2px solid var(--border);
+    border-top-color: var(--purple);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="tag">ReAct Agent</div>
+    <h1>Thought → Action → Observation</h1>
+    <p>Verbose step-by-step trace of every reasoning + tool call cycle</p>
+  </header>
+
+  <div class="input-row">
+    <input type="text" id="query" placeholder="e.g. Which servers in RACK-C2 are overloaded?" />
+    <button id="run" onclick="runAgent()">Run Agent ▶</button>
+  </div>
+
+  <div class="samples">
+    <span class="sample-chip" onclick="setQ(this)">What is the power usage of RACK-A1?</span>
+    <span class="sample-chip" onclick="setQ(this)">List servers in RACK-C2 and check their CPU</span>
+    <span class="sample-chip" onclick="setQ(this)">Is RACK-C2 at risk? Check power and cooling</span>
+    <span class="sample-chip" onclick="setQ(this)">Which rack has the highest power draw?</span>
+  </div>
+
+  <div id="trace"></div>
+
+  <div class="thinking" id="thinking">
+    <div class="spin"></div>
+    <span id="thinking-msg">Agent is reasoning…</span>
+  </div>
+
+  <div id="stats" style="display:none; display:flex;">
+    <div class="stat"><span class="stat-label">Steps taken</span><span class="stat-val" id="s-steps">—</span></div>
+    <div class="stat"><span class="stat-label">Tools called</span><span class="stat-val" id="s-tools">—</span></div>
+    <div class="stat"><span class="stat-label">Status</span><span class="stat-val" id="s-status">—</span></div>
+  </div>
+
+</div>
+
+<script>
+function setQ(el) {
+  document.getElementById('query').value = el.textContent.trim();
+}
+
+/*
+ * This demo runs directly against your FastAPI backend.
+ * Make sure you've added the /agent route from agent_route_snippet.py.
+ *
+ * For local testing without a backend, set DEMO_MODE = true
+ * and it will replay a canned trace.
+ */
+const DEMO_MODE = false;   // ← flip to false when backend is ready
+
+const DEMO_TRACES = {
+  default: {
+    "total_steps": 3,
+    "final_answer": "RACK-C2 is running critically: power is at 99% (4950/5000 W) and the inlet temperature is 27.8°C — above the recommended 22.1°C for NVX-A compute racks. Immediate attention is advised.",
+    "steps": [
+      {
+        "step": 1, "type": "tool_call",
+        "thought": "The user asked about RACK-C2's risk. I should first check what's installed there, then inspect power and cooling separately.",
+        "action": "list_servers_in_rack",
+        "action_input": {"rack_id": "RACK-C2"},
+        "observation": "{\"servers\": [\"PROD2\", \"PROD3\"]}"
+      },
+      {
+        "step": 2, "type": "tool_call",
+        "thought": "I have the server list. Now I need to check RACK-C2's power utilisation to assess risk.",
+        "action": "get_rack_power",
+        "action_input": {"rack_id": "RACK-C2"},
+        "observation": "{\"watts\": 4950, \"capacity_watts\": 5000, \"utilisation_pct\": 99}"
+      },
+      {
+        "step": 3, "type": "tool_call",
+        "thought": "Power is critical at 99%. I also need cooling data before giving a final assessment.",
+        "action": "get_cooling_status",
+        "action_input": {"rack_id": "RACK-C2"},
+        "observation": "{\"inlet_temp_c\": 27.8, \"cooling_mode\": \"active\", \"status\": \"warning\"}"
+      },
+      {
+        "step": 4, "type": "final_answer",
+        "thought": "I now have servers, power, and cooling. RACK-C2 is at 99% power and 27.8°C inlet — both critical indicators.",
+        "content": "RACK-C2 is running critically: power is at 99% (4950/5000 W) and the inlet temperature is 27.8°C — above the recommended 22.1°C for NVX-A compute racks. Immediate attention is advised."
+      }
+    ]
+  }
+};
+
+function getTrace(query) {
+  const q = query.toLowerCase();
+  if (q.includes('rack-c2') || q.includes('rack c2') || q.includes('overload') || q.includes('risk')) {
+    return DEMO_TRACES.default;
+  }
+  // Generic fallback demo
+  return {
+    "total_steps": 2,
+    "final_answer": "Query processed. RACK-A1 is running at 84% power utilisation (4200 W / 5000 W) with a healthy inlet temperature of 21.4°C.",
+    "steps": [
+      {
+        "step": 1, "type": "tool_call",
+        "thought": "I need to fetch the power usage for RACK-A1 to answer this question.",
+        "action": "get_rack_power",
+        "action_input": {"rack_id": "RACK-A1"},
+        "observation": "{\"watts\": 4200, \"capacity_watts\": 5000, \"utilisation_pct\": 84}"
+      },
+      {
+        "step": 2, "type": "tool_call",
+        "thought": "I also want to check the cooling status to give a complete picture.",
+        "action": "get_cooling_status",
+        "action_input": {"rack_id": "RACK-A1"},
+        "observation": "{\"inlet_temp_c\": 21.4, \"cooling_mode\": \"active\", \"status\": \"ok\"}"
+      },
+      {
+        "step": 3, "type": "final_answer",
+        "thought": "I have power and cooling data. RACK-A1 looks healthy — 84% power, good temperature.",
+        "content": "RACK-A1 is running at 84% power utilisation (4200 W / 5000 W) with a healthy inlet temperature of 21.4°C. Status is nominal."
+      }
+    ]
+  };
+}
+
+function clearTrace() {
+  document.getElementById('trace').innerHTML = '';
+  document.getElementById('stats').style.display = 'none';
+}
+
+function showThinking(msg) {
+  const el = document.getElementById('thinking');
+  el.style.display = 'flex';
+  document.getElementById('thinking-msg').textContent = msg;
+}
+
+function hideThinking() {
+  document.getElementById('thinking').style.display = 'none';
+}
+
+function appendStep(step, delay) {
+  return new Promise(resolve => {
+    setTimeout(() => {
+      const trace = document.getElementById('trace');
+      const card = document.createElement('div');
+      card.className = 'step-card';
+
+      if (step.type === 'tool_call') {
+        const obs = (() => { try { return JSON.stringify(JSON.parse(step.observation), null, 2); } catch { return step.observation; } })();
+        const params = JSON.stringify(step.action_input, null, 2);
+        card.innerHTML = `
+          <div class="step-dot dot-thought">${step.step}</div>
+          <div class="step-box">
+            <span class="step-label label-thought">Thought</span>
+            <div class="step-text">${escHtml(step.thought)}</div>
+            <div class="divider"></div>
+            <span class="step-label label-tool">Action — ${escHtml(step.action)}</span>
+            <div class="kv-row">
+              <span class="kv-key">tool</span>
+              <span class="kv-val">${escHtml(step.action)}</span>
+            </div>
+            <div class="kv-row">
+              <span class="kv-key">params</span>
+              <span class="kv-val json">${escHtml(params)}</span>
+            </div>
+            <div class="divider"></div>
+            <span class="step-label label-observe">Observation</span>
+            <div class="kv-val json" style="margin-top:4px">${escHtml(obs)}</div>
+          </div>`;
+      } else if (step.type === 'final_answer') {
+        card.innerHTML = `
+          <div class="step-dot dot-answer">✓</div>
+          <div class="step-box" style="border-color:rgba(52,211,153,.25)">
+            <span class="step-label label-thought">Final thought</span>
+            <div class="step-text" style="margin-bottom:10px">${escHtml(step.thought)}</div>
+            <span class="step-label label-answer">Final answer</span>
+            <div class="step-text bright" style="margin-top:6px; font-size:13px">${escHtml(step.content)}</div>
+          </div>`;
+      } else if (step.type === 'error' || step.type === 'max_steps') {
+        card.innerHTML = `
+          <div class="step-dot dot-err">!</div>
+          <div class="step-box" style="border-color:rgba(248,113,113,.25)">
+            <span class="step-label label-err">Error</span>
+            <div class="step-text">${escHtml(step.content)}</div>
+          </div>`;
+      }
+
+      trace.appendChild(card);
+      resolve();
+    }, delay);
+  });
+}
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+async function runAgent() {
+  const query = document.getElementById('query').value.trim();
+  if (!query) return;
+
+  clearTrace();
+  document.getElementById('run').disabled = true;
+  document.getElementById('query').disabled = true;
+
+  let result;
+
+  if (DEMO_MODE) {
+    // Simulate the multi-step delay feel
+    showThinking('Agent is reasoning…');
+    await new Promise(r => setTimeout(r, 700));
+
+    result = getTrace(query);
+
+    // Stream steps one by one
+    let delay = 0;
+    for (const step of result.steps) {
+      hideThinking();
+      if (step.type === 'tool_call') {
+        showThinking(`Calling tool: ${step.action}…`);
+        await new Promise(r => setTimeout(r, 900));
+        hideThinking();
+      }
+      await appendStep(step, 0);
+      await new Promise(r => setTimeout(r, 400));
+    }
+    hideThinking();
+
+  } else {
+    // Real backend call
+    showThinking('Sending to agent backend…');
+    try {
+      const res = await fetch('/agent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: query }),
+      });
+      result = await res.json();
+      hideThinking();
+      for (const step of result.steps) {
+        await appendStep(step, 0);
+        await new Promise(r => setTimeout(r, 200));
+      }
+    } catch (e) {
+      hideThinking();
+      document.getElementById('trace').innerHTML =
+        `<div style="color:var(--red); font-family:monospace; font-size:13px; padding:16px;">
+          Backend error: ${e.message}<br>
+          Make sure FastAPI is running and the /agent route is added.
+        </div>`;
+    }
+  }
+
+  // Stats
+  if (result) {
+    const toolCalls = (result.steps || []).filter(s => s.type === 'tool_call').length;
+    const lastType  = (result.steps || []).at(-1)?.type;
+    document.getElementById('s-steps').textContent = result.total_steps ?? '—';
+    document.getElementById('s-tools').textContent = toolCalls;
+    document.getElementById('s-status').textContent = lastType === 'final_answer' ? '✅ resolved' : '⚠️ partial';
+    document.getElementById('stats').style.display = 'flex';
+  }
+
+  document.getElementById('run').disabled = false;
+  document.getElementById('query').disabled = false;
+}
+
+document.getElementById('query').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runAgent();
+});
+</script>
+</body>
+</html>

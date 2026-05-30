@@ -371,6 +371,8 @@
             <div class="node-sub">Validates input · manages session context · routes to pipeline or agent loop</div>
             <div class="route-tags">
               <span class="route-tag chat"><span class="route-dot"></span>POST /chat → Classic Pipeline</span>
+              <span class="route-tag chat"><span class="route-dot"></span>GET /sidebar → Session list</span>
+              <span class="route-tag chat"><span class="route-dot"></span>GET /chat-history/{session_id} → Load history</span>
               <span class="route-tag agent"><span class="route-dot"></span>POST /agent → ReAct Loop</span>
             </div>
           </div>
@@ -587,7 +589,7 @@
           <div class="node-icon icon-green">📤</div>
           <div class="node-text">
             <div class="node-title">FastAPI Response Handler</div>
-            <div class="node-sub">/chat → {"reply": "..."} · /agent → {final_answer, steps[], total_steps}</div>
+            <div class="node-sub">/chat → {"reply": "..."} · /agent → {final_answer, steps[], total_steps} · session APIs serve sidebar and history</div>
           </div>
           <span class="node-badge badge-green">FastAPI</span>
         </div>

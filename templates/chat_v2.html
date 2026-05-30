@@ -1,0 +1,1193 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  /* ── Design Tokens / CSS Variables ── */
+  :root {
+    /* Light Mode (Default) */
+    --color-bg-primary: #ffffff;
+    --color-bg-secondary: #f9fafb;
+    --color-bg-tertiary: #f3f4f6;
+    --color-text-primary: #111827;
+    --color-text-secondary: #4b5563;
+    --color-text-tertiary: #9ca3af;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-border-strong: rgba(0, 0, 0, 0.15);
+    --brand-purple: #7c3aed;
+    --brand-purple-hover: #6d28d9;
+    --border-radius-md: 8px;
+    --border-radius-lg: 12px;
+  }
+
+  [data-theme="dark"] {
+    /* Dark Mode Overrides */
+    --color-bg-primary: #0f1115;
+    --color-bg-secondary: #161920;
+    --color-bg-tertiary: #212631;
+    --color-text-primary: #f9fafb;
+    --color-text-secondary: #9ca3af;
+    --color-text-tertiary: #6b7280;
+    --color-border: rgba(255, 255, 255, 0.08);
+    --color-border-strong: rgba(255, 255, 255, 0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  .app {
+    display: flex;
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--color-bg-primary);
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    transition: background 0.2s, color 0.2s;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-secondary);
+    border-right: 1px solid var(--color-border);
+  }
+
+  .sidebar-header {
+    padding: 16px 14px 12px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .brand-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .brand-dot span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #a78bfa;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    letter-spacing: -0.2px;
+  }
+
+  .new-chat-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+
+  .new-chat-btn:hover {
+    background: var(--color-bg-tertiary);
+  }
+
+  .new-chat-btn i { font-size: 15px; color: var(--color-text-secondary); }
+
+  .sidebar-section {
+    padding: 12px 10px 4px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    padding: 0 4px;
+    margin-bottom: 4px;
+  }
+
+  .chat-list { flex: 1; overflow-y: auto; padding-bottom: 8px; }
+
+  .chat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    transition: background 0.1s;
+    position: relative;
+  }
+
+  .chat-item:hover { background: var(--color-bg-tertiary); }
+
+  .chat-item.active {
+    background: var(--color-bg-primary);
+    border-bottom: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .chat-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--brand-purple);
+  }
+
+  .chat-item-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 13px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  [data-theme="dark"] .chat-item-icon {
+    border-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .chat-item-icon.purple { background: #ede9fe; color: #6d28d9; }
+  .chat-item-icon.teal { background: #ccfbf1; color: #0f766e; }
+  .chat-item-icon.amber { background: #fef3c7; color: #b45309; }
+  .chat-item-icon.slate { background: #e2e8f0; color: #475569; }
+
+  [data-theme="dark"] .chat-item-icon.purple { background: #2e1065; color: #c084fc; }
+  [data-theme="dark"] .chat-item-icon.teal { background: #115e59; color: #2dd4bf; }
+  [data-theme="dark"] .chat-item-icon.amber { background: #78350f; color: #fbbf24; }
+  [data-theme="dark"] .chat-item-icon.slate { background: #334155; color: #cbd5e1; }
+
+  .chat-item-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .chat-item-title {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .chat-item-preview {
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
+  }
+
+  .chat-item-time {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+  }
+
+  .sidebar-footer {
+    padding: 10px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    transition: background 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .user-pill:hover { 
+    background: var(--color-bg-tertiary); 
+    border-color: var(--color-border);
+  }
+
+  .avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #1a1a2e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: #a78bfa;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .user-name { font-size: 12.5px; font-weight: 500; color: var(--color-text-primary); flex: 1; }
+
+  /* ── Main ── */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+    background: var(--color-bg-primary);
+  }
+
+  .model-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg-secondary);
+    cursor: pointer;
+    font-size: 12.5px;
+    color: var(--color-text-primary);
+    font-weight: 500;
+    transition: background 0.15s;
+  }
+
+  .model-selector:hover { background: var(--color-bg-tertiary); }
+  .model-selector i { font-size: 14px; color: var(--color-text-secondary); }
+
+  .model-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+  }
+
+  .topbar-actions { display: flex; gap: 6px; align-items: center; }
+
+.icon-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid transparent;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    /* Use the variable instead of a fixed color so it flips in dark mode */
+    color: var(--color-text-secondary); 
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+
+  .icon-btn:hover { 
+    background: var(--color-bg-secondary); 
+    color: var(--color-text-primary); 
+    border-color: var(--color-border);
+  }
+  .icon-btn i { font-size: 17px; }
+
+  .icon-btn:hover { 
+    background: var(--color-bg-secondary); 
+    color: var(--color-text-primary); 
+    border-color: var(--color-border);
+  }
+  .icon-btn i { font-size: 17px; }
+
+  /* Theme Switcher Specific */
+  .theme-btn i { font-size: 15px; }
+
+  /* ── Chat area ── */
+  .chat-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 0;
+    scroll-behavior: smooth;
+    background: var(--color-bg-primary);
+  }
+
+  .chat-area::-webkit-scrollbar { width: 6px; }
+  .chat-area::-webkit-scrollbar-thumb { background: var(--color-border-strong); border-radius: 3px; }
+
+  .message-group {
+    display: flex;
+    gap: 12px;
+    padding: 8px 20px;
+    max-width: 780px;
+    margin: 0 auto;
+    animation: fadeSlideIn 0.2s ease both;
+  }
+
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+    margin-top: 2px;
+    border: 1px solid var(--color-border);
+  }
+
+  .msg-avatar.user {
+    background: #1a1a2e;
+    color: #a78bfa;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+  }
+
+  .msg-avatar.bot {
+    background: var(--color-bg-secondary);
+    color: var(--brand-purple);
+    font-size: 13px;
+  }
+
+  .msg-body { flex: 1; min-width: 0; }
+
+  .msg-sender {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .msg-time {
+    font-size: 10px;
+    color: var(--color-text-tertiary);
+    font-weight: 400;
+  }
+
+  .msg-content {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--color-text-primary);
+  }
+
+  .msg-content.user-msg {
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 4px 14px 14px 14px;
+    padding: 10px 14px;
+    display: inline-block;
+    max-width: 85%;
+  }
+
+  .msg-actions {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .message-group:hover .msg-actions { opacity: 1; }
+
+  .action-chip {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-primary);
+    color: var(--color-text-secondary);
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .action-chip:hover { 
+    background: var(--color-bg-secondary); 
+    color: var(--color-text-primary);
+    border-color: var(--color-border-strong);
+  }
+  .action-chip i { font-size: 13px; }
+
+  .divider-date {
+    text-align: center;
+    margin: 16px 0;
+    position: relative;
+  }
+
+  .divider-date::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: var(--color-border);
+  }
+
+  .divider-date span {
+    position: relative;
+    background: var(--color-bg-primary);
+    padding: 0 10px;
+    font-size: 11px;
+    color: var(--color-text-tertiary);
+    font-weight: 500;
+  }
+
+  /* ── Typing indicator ── */
+  .typing-group { display: flex; gap: 12px; padding: 6px 20px; max-width: 780px; margin: 0 auto; }
+
+  .typing-dots {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px;
+    border-radius: 4px 14px 14px 14px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-secondary);
+  }
+
+  .typing-dots span {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--color-text-tertiary);
+    animation: bounce 1.2s ease-in-out infinite;
+  }
+
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-4px); }
+  }
+
+  /* ── Input area ── */
+  .input-area {
+    padding: 14px 20px 16px;
+    border-top: 1px solid var(--color-border);
+    flex-shrink: 0;
+    background: var(--color-bg-primary);
+  }
+
+  .input-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border-strong);
+    border-radius: 14px;
+    padding: 8px 10px 8px 14px;
+    transition: border-color 0.2s;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  .input-wrapper:focus-within {
+    border-color: var(--brand-purple);
+  }
+
+  .message-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--color-text-primary);
+    resize: none;
+    min-height: 24px;
+    max-height: 120px;
+    overflow-y: auto;
+    line-height: 1.5;
+    padding: 2px 0;
+  }
+
+  .message-input::placeholder { color: var(--color-text-tertiary); }
+
+  .input-actions { display: flex; align-items: center; gap: 4px; }
+
+  .attach-btn {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--color-text-tertiary);
+    transition: color 0.15s, background 0.15s, border-color 0.15s;
+  }
+
+  .attach-btn:hover { 
+    color: var(--color-text-secondary); 
+    background: var(--color-bg-tertiary);
+    border-color: var(--color-border);
+  }
+  .attach-btn i { font-size: 16px; }
+
+  .send-btn {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    border: none;
+    background: var(--brand-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #fff;
+    transition: background 0.15s, transform 0.1s;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { background: var(--brand-purple-hover); }
+  .send-btn:active { transform: scale(0.95); }
+  .send-btn i { font-size: 15px; }
+
+  .input-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .input-footer span {
+    font-size: 10.5px;
+    color: var(--color-text-tertiary);
+  }
+
+  .input-footer kbd {
+    font-family: 'DM Mono', monospace;
+    font-size: 9.5px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    border: 1px solid var(--color-border-strong);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-secondary);
+  }
+
+  /* ── Suggested prompts ── */
+  .suggested {
+    padding: 8px 20px 0;
+    max-width: 780px;
+    margin: 0 auto;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    background: var(--color-bg-primary);
+  }
+
+  .suggested-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-bg-primary);
+    color: var(--color-text-secondary);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    white-space: nowrap;
+  }
+
+  .suggested-chip:hover {
+    background: var(--color-bg-secondary);
+    color: var(--color-text-primary);
+    border-color: var(--brand-purple);
+  }
+
+  .suggested-chip i { font-size: 13px; color: var(--brand-purple); }
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Aloo Chaat — full-page chat interface mockup with sidebar showing recent conversations and a main chat area</h2>
+
+<div class="app" id="appRoot" data-theme="light">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="brand">
+        <div class="brand-dot"><span>AC</span></div>
+        <span class="brand-name">Aloo Chaat</span>
+      </div>
+      <button class="new-chat-btn" id="newChatBtn">
+        <i class="ti ti-plus" aria-hidden="true"></i>
+        New chat
+      </button>
+    </div>
+
+    <div class="chat-list" id="sidebarChatList">
+      <div class="sidebar-section">
+        <div class="section-label">Today</div>
+      </div>
+
+      <div class="chat-item active">
+        <div class="chat-item-icon purple"><i class="ti ti-activity" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">RACK-C2 power check</div>
+          <div class="chat-item-preview">99% utilisation warning</div>
+        </div>
+        <span class="chat-item-time">now</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon teal"><i class="ti ti-cpu" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">NM1 CPU spike debug</div>
+          <div class="chat-item-preview">Zabbix alert at 4:12pm</div>
+        </div>
+        <span class="chat-item-time">2h</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon slate"><i class="ti ti-file-text" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">SLA Tier-3 colocation</div>
+          <div class="chat-item-preview">99.982% uptime guarantee</div>
+        </div>
+        <span class="chat-item-time">5h</span>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:6px;">
+        <div class="section-label">Yesterday</div>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon amber"><i class="ti ti-temperature" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Cooling thresholds ACO</div>
+          <div class="chat-item-preview">HelioFlux 67.4°C limit</div>
+        </div>
+        <span class="chat-item-time">1d</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon teal"><i class="ti ti-topology-star" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">What is a data center?</div>
+          <div class="chat-item-preview">General info query</div>
+        </div>
+        <span class="chat-item-time">1d</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon slate"><i class="ti ti-settings" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Kubernetes scheduler</div>
+          <div class="chat-item-preview">Knowledge base lookup</div>
+        </div>
+        <span class="chat-item-time">1d</span>
+      </div>
+
+      <div class="sidebar-section" style="margin-top:6px;">
+        <div class="section-label">Earlier</div>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon purple"><i class="ti ti-bolt" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">RACK-A1 power report</div>
+          <div class="chat-item-preview">84% utilisation, nominal</div>
+        </div>
+        <span class="chat-item-time">3d</span>
+      </div>
+
+      <div class="chat-item">
+        <div class="chat-item-icon slate"><i class="ti ti-file-upload" aria-hidden="true"></i></div>
+        <div class="chat-item-text">
+          <div class="chat-item-title">Ingest infrastructure doc</div>
+          <div class="chat-item-preview">48 chunks added to FAISS</div>
+        </div>
+        <span class="chat-item-time">5d</span>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="avatar">RB</div>
+        <span class="user-name">Robin</span>
+        <i class="ti ti-dots" style="font-size:15px;color:var(--color-text-tertiary)" aria-hidden="true"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+   <div class="topbar">
+  <div class="model-selector">
+    <div class="model-dot"></div>
+    Mistral 7B
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+  </div>
+  <div class="topbar-actions">
+    <button class="icon-btn theme-btn" id="themeToggleBtn" title="Toggle Dark/Light Mode" aria-label="Toggle theme" onclick="toggleTheme()">
+      <svg id="themeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+    </button>
+    <button class="icon-btn" title="Search chats" aria-label="Search chats">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+    </button>
+    <button class="icon-btn" title="Share" aria-label="Share conversation">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+    </button>
+    <button class="icon-btn" title="More options" aria-label="More options">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+    </button>
+  </div>
+</div>
+
+    <!-- Chat messages -->
+    <div class="chat-area" id="chatArea">
+
+      <div class="divider-date"><span>Today</span></div>
+
+      <div class="message-group">
+        <div class="msg-avatar user">RB</div>
+        <div class="msg-body">
+          <div class="msg-sender">You <span class="msg-time">10:42 am</span></div>
+          <div class="msg-content user-msg">Is RACK-C2 at risk? Check power and cooling.</div>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="msg-avatar bot" aria-hidden="true">✦</div>
+        <div class="msg-body">
+          <div class="msg-sender">Aloo Chaat <span class="msg-time">10:42 am</span></div>
+          <div class="msg-content">
+            Yes — RACK-C2 is running critically on both fronts.<br><br>
+            <strong>Power:</strong> 4,950 W out of a 5,000 W capacity — that's <strong>99% utilisation</strong>. Any additional load risks tripping breakers.<br><br>
+            <strong>Cooling:</strong> Inlet temperature is <strong>27.8°C</strong>, well above the recommended 22.1°C ceiling for NVX-A compute racks. Cooling mode is active but flagged as <em>warning</em>.<br><br>
+            Recommend immediate capacity review for PROD2 and PROD3 workloads, and escalate to the facilities team.
+          </div>
+          <div class="msg-actions">
+            <button class="action-chip"><i class="ti ti-copy" aria-hidden="true"></i>Copy</button>
+            <button class="action-chip"><i class="ti ti-thumb-up" aria-hidden="true"></i>Good</button>
+            <button class="action-chip"><i class="ti ti-refresh" aria-hidden="true"></i>Retry</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="msg-avatar user">RB</div>
+        <div class="msg-body">
+          <div class="msg-sender">You <span class="msg-time">10:44 am</span></div>
+          <div class="msg-content user-msg">Which servers are in that rack?</div>
+        </div>
+      </div>
+
+      <div class="message-group">
+        <div class="msg-avatar bot" aria-hidden="true">✦</div>
+        <div class="msg-body">
+          <div class="msg-sender">Aloo Chaat <span class="msg-time">10:44 am</span></div>
+          <div class="msg-content">
+            RACK-C2 contains two servers: <strong>PROD2</strong> and <strong>PROD3</strong>.<br><br>
+            PROD2 is currently at 91% CPU — critical status. PROD3 data is pending a separate check. Would you like me to pull CPU metrics for both?
+          </div>
+          <div class="msg-actions">
+            <button class="action-chip"><i class="ti ti-copy" aria-hidden="true"></i>Copy</button>
+            <button class="action-chip"><i class="ti ti-thumb-up" aria-hidden="true"></i>Good</button>
+            <button class="action-chip"><i class="ti ti-refresh" aria-hidden="true"></i>Retry</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="typing-group" id="typingIndicator" style="display:none;">
+        <div class="msg-avatar bot" aria-hidden="true">✦</div>
+        <div>
+          <div class="msg-sender" style="margin-bottom:4px;">Aloo Chaat</div>
+          <div class="typing-dots">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suggested -->
+    <div class="suggested">
+      <button class="suggested-chip" onclick="insertPrompt(this)"><i class="ti ti-activity" aria-hidden="true"></i>Check PROD3 CPU</button>
+      <button class="suggested-chip" onclick="insertPrompt(this)"><i class="ti ti-alert-triangle" aria-hidden="true"></i>Raise a ticket</button>
+      <button class="suggested-chip" onclick="insertPrompt(this)"><i class="ti ti-temperature" aria-hidden="true"></i>Cooling SOP</button>
+    </div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea class="message-input" id="msgInput" rows="1" placeholder="Ask about servers, racks, SLAs…" aria-label="Chat message"></textarea>
+        <div class="input-actions">
+          <button class="attach-btn" title="Attach file" aria-label="Attach file"><i class="ti ti-paperclip" aria-hidden="true"></i></button>
+          <button class="send-btn" id="sendBtn" onclick="handleSend()" aria-label="Send message"><i class="ti ti-arrow-up" aria-hidden="true"></i></button>
+        </div>
+      </div>
+      <div class="input-footer">
+        <span>Press <kbd>Enter</kbd> to send &nbsp;·&nbsp; <kbd>Shift+Enter</kbd> for new line</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const input = document.getElementById('msgInput');
+  const chatArea = document.getElementById('chatArea');
+  const typing = document.getElementById('typingIndicator');
+  const appRoot = document.getElementById('appRoot');
+  const themeToggleBtn = document.getElementById('themeToggleBtn');
+
+  function generateSessionId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  window.currentSessionId = generateSessionId();
+
+  // ── New Chat Functionality ──
+document.getElementById('newChatBtn').addEventListener('click', function() {
+  // 1. Remove the active highlighting from all sidebar items
+  document.querySelectorAll('.chat-list .chat-item').forEach(item => {
+    item.classList.remove('active');
+  });
+
+  // 2. Generate current time for the welcome message
+  const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  window.currentSessionId = generateSessionId();
+
+  // 3. Overwrite the chat area with a clean slate and a fresh system greeting
+  chatArea.innerHTML = `
+    <div class="divider-date"><span>Today</span></div>
+    
+    <div class="message-group">
+      <div class="msg-avatar bot" aria-hidden="true">✦</div>
+      <div class="msg-body">
+        <div class="msg-sender">Aloo Chaat <span class="msg-time">${time}</span></div>
+        <div class="msg-content">
+          Hello! Started a fresh session. Ask me anything about servers, racks, or SLAs.
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-group" id="typingIndicator" style="display:none;">
+      <div class="msg-avatar bot" aria-hidden="true">✦</div>
+      <div>
+        <div class="msg-sender" style="margin-bottom:4px;">Aloo Chaat</div>
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // 4. Re-bind the global typing variable to the newly created DOM node
+  window.typing = document.getElementById('typingIndicator');
+  
+  // 5. Refresh the sidebar, but do not override the new session with an existing chat
+  loadSidebarChats({ loadFirstChat: false });
+  
+  // 6. Scroll to the top and refocus input
+  chatArea.scrollTop = 0;
+  input.value = '';
+  input.style.height = 'auto';
+  input.focus();
+});
+
+  // Theme Toggler JavaScript Logic
+  function toggleTheme() {
+  const currentTheme = appRoot.getAttribute('data-theme');
+  const themeIcon = document.getElementById('themeIcon');
+  
+  if (currentTheme === 'light') {
+    appRoot.setAttribute('data-theme', 'dark');
+    // Change to Sun Icon SVG
+    themeIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>';
+  } else {
+    appRoot.setAttribute('data-theme', 'light');
+    // Change back to Moon Icon SVG
+    themeIcon.innerHTML = '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>';
+  }
+}
+  input.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSend();
+    }
+  });
+
+  function insertPrompt(btn) {
+    input.value = btn.textContent.trim();
+    input.focus();
+  }
+
+  async function handleSend() {
+    const message = input.value.trim();
+    const sendBtn = document.getElementById("sendBtn");
+
+    if (!message) return;
+
+    // 1. Render user message locally
+    addMessage("user", message);
+    
+    // Clear input wrapper state
+    input.value = '';
+    input.style.height = 'auto';
+    input.focus();
+    
+    // 2. State Management: Show loading indicators & lock inputs
+    const currentTyping = document.getElementById('typingIndicator');
+    if (currentTyping) currentTyping.style.display = 'flex';
+    
+    sendBtn.disabled = true;
+    input.disabled = true;
+    chatArea.scrollTop = chatArea.scrollHeight;
+
+    if (!window.currentSessionId) {
+      window.currentSessionId = generateSessionId();
+    }
+
+    try {
+        // 3. Fire real network payload to your /chat backend agent route
+        const response = await fetch("/chat", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ message: message, session_id: window.currentSessionId })
+        });
+
+        const data = await response.json();
+        
+        // 4. Render system response block (data.reply)
+        addMessage("bot", data.reply);
+    } catch (error) {
+        addMessage("bot", "Sorry, there was an error processing your request.");
+    } finally {
+        // 5. Cleanup State: Hide loader UI and restore user interactive focus
+        if (currentTyping) currentTyping.style.display = 'none';
+        sendBtn.disabled = false;
+        input.disabled = false;
+        input.focus();
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+}
+
+function addMessage(sender, text) {
+    const currentTyping = document.getElementById('typingIndicator');
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    
+    let messageHTML = '';
+
+    if (sender === "user") {
+        // Sanitizes tags to protect against layout breakage while preserving text string
+        const safeText = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        messageHTML = `
+          <div class="message-group">
+            <div class="msg-avatar user">RB</div>
+            <div class="msg-body">
+              <div class="msg-sender">You <span class="msg-time">${time}</span></div>
+              <div class="msg-content user-msg">${safeText}</div>
+            </div>
+          </div>`;
+    } else {
+        // Bot variant: preserves structural markdown tags returned by the model like <strong> or <br>
+        messageHTML = `
+          <div class="message-group">
+            <div class="msg-avatar bot" aria-hidden="true">✦</div>
+            <div class="msg-body">
+              <div class="msg-sender">Aloo Chaat <span class="msg-time">${time}</span></div>
+              <div class="msg-content">${text}</div>
+              <div class="msg-actions">
+                <button class="action-chip"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>Copy</button>
+                <button class="action-chip"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76l5.47-5.47a1 1 0 0 1 1.39-.03l.38.38a1.8 1.8 0 0 1 .16 2.33z"/></svg>Good</button>
+                <button class="action-chip"><svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>Retry</button>
+              </div>
+            </div>
+          </div>`;
+    }
+
+    // Appends exactly right above the dynamic loader dot module
+    if (currentTyping) {
+        currentTyping.insertAdjacentHTML('beforebegin', messageHTML);
+    } else {
+        chatArea.insertAdjacentHTML('beforeend', messageHTML);
+    }
+    
+    chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+// ─── RUNS AUTOMATICALLY ON PAGE LOAD ───
+window.addEventListener('DOMContentLoaded', () => {
+    loadSidebarChats({ loadFirstChat: true });
+});
+
+// Function to fetch and draw the sidebar list from Redis
+async function loadSidebarChats({ loadFirstChat = true } = {}) {
+    let sidebarContainer = document.getElementById('sidebarChatList');
+    if (!sidebarContainer) {
+        sidebarContainer = document.querySelector('.chat-list');
+    }
+    if (!sidebarContainer) return;
+
+    try {
+        // 1. Fetch the sorted directory data from our FastAPI route
+        const response = await fetch('/sidebar');
+        const chats = await response.json();
+
+        // Clear out any old hardcoded mockup placeholders inside the list
+        sidebarContainer.innerHTML = '';
+
+        if (chats.length === 0) {
+            sidebarContainer.innerHTML = '<div class="no-chats-msg" style="padding:15px; font-size:13px; opacity:0.6; text-align:center;">No recent chats</div>';
+            return;
+        }
+
+        // 2. Loop through every chat block returned by Redis
+        chats.forEach(chat => {
+            // Format a clean string layout for each sidebar item
+            const chatItemHTML = `
+                <div class="chat-item" data-session-id="${chat.session_id}" onclick="switchChatSession('${chat.session_id}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.7; margin-right:8px;"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    <span class="chat-title">${escapeHTML(chat.title)}</span>
+                </div>
+            `;
+            // Append it smoothly into our sidebar element block
+            sidebarContainer.insertAdjacentHTML('beforeend', chatItemHTML);
+        });
+
+        // If this is the first load and a chat exists, make the first item active
+        const firstChat = sidebarContainer.querySelector('.chat-item');
+        if (loadFirstChat && firstChat) {
+            firstChat.classList.add('active');
+            loadChatHistory(firstChat.dataset.sessionId);
+        }
+
+    } catch (error) {
+        console.error("Error loading sidebar elements from Redis:", error);
+    }
+}
+
+async function loadChatHistory(sessionId) {
+    if (!sessionId) return;
+    window.currentSessionId = sessionId;
+
+    try {
+        const response = await fetch(`/chat-history/${encodeURIComponent(sessionId)}`);
+        if (!response.ok) {
+            throw new Error(`Failed to load chat history: ${response.status}`);
+        }
+
+        const history = await response.json();
+        chatArea.innerHTML = `
+            <div class="divider-date"><span>Chat history</span></div>
+            <div class="typing-group" id="typingIndicator" style="display:none;">
+              <div class="msg-avatar bot" aria-hidden="true">✦</div>
+              <div>
+                <div class="msg-sender" style="margin-bottom:4px;">Aloo Chaat</div>
+                <div class="typing-dots">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+            </div>
+        `;
+
+        window.typing = document.getElementById('typingIndicator');
+
+        if (!history || history.length === 0) {
+            chatArea.insertAdjacentHTML('beforeend', '<div class="no-chats-msg" style="padding:20px; font-size:13px; opacity:0.7; text-align:center;">No messages stored for this session.</div>');
+            return;
+        }
+
+        history.forEach(item => {
+            const timestamp = item.timestamp ? new Date(item.timestamp * 1000) : new Date();
+            const timeString = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const sender = item.role === 'bot' ? 'Aloo Chaat' : 'You';
+            const avatarClass = item.role === 'bot' ? 'bot' : 'user';
+            const messageClass = item.role === 'bot' ? '' : 'user-msg';
+            const safeText = escapeHTML(item.text || '');
+
+            const messageHTML = `
+              <div class="message-group">
+                <div class="msg-avatar ${avatarClass}">${avatarClass === 'bot' ? '✦' : 'RB'}</div>
+                <div class="msg-body">
+                  <div class="msg-sender">${sender} <span class="msg-time">${timeString}</span></div>
+                  <div class="msg-content ${messageClass}">${safeText}</div>
+                </div>
+              </div>`;
+
+            chatArea.insertAdjacentHTML('beforeend', messageHTML);
+        });
+
+        chatArea.scrollTop = chatArea.scrollHeight;
+    } catch (error) {
+        console.error('Error loading chat history:', error);
+        chatArea.insertAdjacentHTML('beforeend', '<div class="no-chats-msg" style="padding:20px; font-size:13px; opacity:0.7; text-align:center;">Unable to load chat history.</div>');
+    }
+}
+
+function switchChatSession(sessionId) {
+    document.querySelectorAll('.chat-item').forEach(item => item.classList.remove('active'));
+    const selectedItem = document.querySelector(`.chat-item[data-session-id="${sessionId}"]`);
+    if (selectedItem) {
+        selectedItem.classList.add('active');
+    }
+    loadChatHistory(sessionId);
+}
+
+// Quick helper utility function to safely sanitize text strings and prevent layout breaking
+function escapeHTML(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+</script>

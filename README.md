@@ -14,6 +14,7 @@
 | **Embedding Model** | nomic-embed-text |
 | **Knowledge Source** | Company PDFs |
 | **API Layer** | Internal REST Backend APIs |
+| **Session Store** | Redis |
 
 ---
 
@@ -181,11 +182,17 @@ Uploaded documents are indexed into the same FAISS store used by the RAG pipelin
 **Response:**
 ```json
 {
-  "intent": "knowledge",
-  "response": "Based on the service agreement, Tier-3 colocation carries a 99.982% uptime SLA...",
-  "sources": ["yotta_sla_guide_2024.pdf — page 12"]
+  "reply": "Based on the service agreement, Tier-3 colocation carries a 99.982% uptime SLA..."
 }
 ```
+
+### `GET /sidebar`
+
+Returns the user's recent chat sessions, including `session_id`, title, and `updated_at` metadata for sidebar navigation.
+
+### `GET /chat-history/{session_id}`
+
+Returns the stored message list for a specific chat session.
 
 ### `POST /agent`
 
@@ -211,9 +218,11 @@ Runs the ReAct-style agent loop (tool-calling) and returns a detailed trace.
 
 ## ⚠️ Notes & Recommendations
 
+- **Redis is required for session storage** — the sidebar and message history are backed by Redis hashes/lists, so ensure `redis-server` is running.
 - **Classifier prompt quality is critical** — be explicit in the system prompt about what each intent type covers. Edge cases like *"show my power usage"* can look like both Knowledge and Action.
 - **RAG chunk size** — for data center PDFs (SLAs, pricing, specs), aim for ~400–500 token chunks with ~50 token overlap for best FAISS recall.
 - **Action safety** — add a confirmation step in the UI before executing any write operations (ticket creation, config changes etc.).
+- **Sidebar session flow** — `/sidebar` provides recent chat metadata and `/chat-history/{session_id}` loads the full message history for the selected session.
 - **Session context** — pass recent conversation history into the classifier prompt to handle follow-up queries correctly.
 
 ---

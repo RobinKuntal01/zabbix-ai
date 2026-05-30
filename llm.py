@@ -1,8 +1,6 @@
 import json
-
-from fastapi.responses import JSONResponse
+from zabbix_client import get_cpu_usage, get_power_usage
 from prompt import build_intent_prompt, build_general_prompt, build_tool_classifier_message, explain_realtime_metrics, rag_prompt
-from fastapi import FastAPI, Request            
 from config import OLLAMA_GENERATE_URL, JOKE_URL, OLLAMA_CHAT_URL
 import requests
 from rag.rag_pipeline import answer_with_rag
@@ -49,14 +47,14 @@ def parse_action(user_message: str) -> str:
         print(f"Action tool response: {action_tool_response}")
         return action_tool_response
 
-def generate_general_info(user_message: str) -> dict:
+def generate_general_info(user_message: str) -> str:
     print("Generating general information...")
     general_prompt = build_general_prompt(user_input=user_message)
     response = call_ollama_generate(general_prompt)
-    return {"reply": response["response"]}
+    return response["response"]
 
 
-def call_ollama_chat_explain(real_time_metric: str) -> dict:
+def call_ollama_chat_explain(real_time_metric: str) -> str:
     response = requests.post(
         OLLAMA_CHAT_URL,
         json={
@@ -72,7 +70,7 @@ def call_ollama_chat_explain(real_time_metric: str) -> dict:
 
     return model_output
 
-def generate_with_rag(query: str) -> dict:
+def generate_with_rag(query: str) -> str:
     print("Generating response with RAG...")
     context = answer_with_rag(query)
 
@@ -89,3 +87,57 @@ def generate_with_rag(query: str) -> dict:
     print(f"Ollama rag chat response: {response.json()}") 
     response = response.json()
     return response["message"]["content"]
+
+
+def process_llm_call(user_message: str) -> str:
+    print("Processing LLM call...")
+
+    intent_result = intent_classification(user_message)
+    category = intent_result["category"]
+    print(f"Intent classification category: {category}")
+
+    if category['category'] == "info":
+        print("Handling info category")
+        return generate_general_info(user_message)
+
+    elif category['category'] == "knowledge":
+        print("Handling knowledge category")
+        return generate_with_rag(user_message)
+
+    elif category['category'] == "action":
+        print('Handling action category')
+        try:
+            res_parse_action = json.loads(parse_action(user_message))
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse action JSON: {e}")
+            return generate_general_info(user_message)
+
+        print(f"Parsed tool: {res_parse_action}")
+
+        tool = res_parse_action.get('action', '')
+        arguments = res_parse_action.get('arguments', {})
+
+        allowed_tools = ["get_cpu_usage", "get_power_usage"]
+        if tool in allowed_tools:
+            try:
+                if tool == "get_cpu_usage":
+                    cpu_info = get_cpu_usage(arguments)
+                    explanation = call_ollama_chat_explain(cpu_info)
+                    print(f"Explanation for CPU usage: {explanation}")
+                    return explanation
+
+                elif tool == "get_power_usage":
+                    power_info = get_power_usage(arguments)
+                    explanation = call_ollama_chat_explain(power_info)
+                    print(f"Explanation for power usage: {explanation}")
+                    return explanation
+            except Exception as e:
+                print(f"Error calling tool {tool}: {e}")
+                return generate_general_info(user_message)
+        else:
+            print(f"Unknown tool '{tool}' received from LLM, defaulting to info response.")
+            return generate_general_info(user_message)
+
+    print("Unrecognized intent category, defaulting to general info response.")
+    return generate_general_info(user_message)
+ 

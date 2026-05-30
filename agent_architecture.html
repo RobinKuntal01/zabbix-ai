@@ -16,12 +16,12 @@
     --white: #e8f0ff;
 
     --blue: #3b82f6;
-    --blue-glow: rgba(59,130,246,0.18);
     --cyan: #06b6d4;
     --green: #10b981;
     --amber: #f59e0b;
     --purple: #a855f7;
     --red: #ef4444;
+    --rose: #fb7185;
 
     --general: #06b6d4;
     --general-bg: rgba(6,182,212,0.08);
@@ -29,6 +29,7 @@
     --knowledge-bg: rgba(168,85,247,0.08);
     --action: #f59e0b;
     --action-bg: rgba(245,158,11,0.08);
+    --react-bg: rgba(251,113,133,0.08);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,423 +42,317 @@
     overflow-x: hidden;
   }
 
-  /* Background grid */
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
+    position: fixed; inset: 0;
     background-image:
       linear-gradient(var(--border) 1px, transparent 1px),
       linear-gradient(90deg, var(--border) 1px, transparent 1px);
     background-size: 40px 40px;
     opacity: 0.35;
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
 
   .canvas {
-    position: relative;
-    z-index: 1;
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 48px 32px 64px;
+    position: relative; z-index: 1;
+    max-width: 1140px; margin: 0 auto;
+    padding: 48px 32px 80px;
   }
 
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 56px;
-    animation: fadeDown 0.6s ease both;
-  }
+  .header { text-align: center; margin-bottom: 48px; animation: fadeDown 0.6s ease both; }
   .header-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--blue);
-    text-transform: uppercase;
-    margin-bottom: 10px;
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    letter-spacing: 3px; color: var(--blue); text-transform: uppercase; margin-bottom: 10px;
   }
-  .header h1 {
-    font-size: 32px;
-    font-weight: 800;
-    color: var(--white);
-    letter-spacing: -0.5px;
-    margin-bottom: 8px;
-  }
-  .header p {
-    font-size: 14px;
-    color: var(--muted);
-    font-family: 'Space Mono', monospace;
-  }
+  .header h1 { font-size: 30px; font-weight: 800; color: var(--white); letter-spacing: -0.5px; margin-bottom: 8px; }
+  .header p  { font-size: 13px; color: var(--muted); font-family: 'Space Mono', monospace; }
 
-  /* Stack chips */
   .stack-chips {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-bottom: 52px;
-    animation: fadeDown 0.6s 0.1s ease both;
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 8px; margin-bottom: 52px; animation: fadeDown 0.6s 0.1s ease both;
   }
   .chip {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid;
-    letter-spacing: 0.5px;
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    padding: 4px 12px; border-radius: 20px; border: 1px solid; letter-spacing: 0.5px;
   }
-  .chip.blue  { color: var(--blue);    border-color: var(--blue);    background: rgba(59,130,246,0.07); }
-  .chip.cyan  { color: var(--cyan);    border-color: var(--cyan);    background: rgba(6,182,212,0.07); }
-  .chip.green { color: var(--green);   border-color: var(--green);   background: rgba(16,185,129,0.07); }
-  .chip.purple{ color: var(--purple);  border-color: var(--purple);  background: rgba(168,85,247,0.07); }
-  .chip.amber { color: var(--amber);   border-color: var(--amber);   background: rgba(245,158,11,0.07); }
+  .chip.blue   { color: var(--blue);   border-color: var(--blue);   background: rgba(59,130,246,0.07); }
+  .chip.cyan   { color: var(--cyan);   border-color: var(--cyan);   background: rgba(6,182,212,0.07); }
+  .chip.green  { color: var(--green);  border-color: var(--green);  background: rgba(16,185,129,0.07); }
+  .chip.purple { color: var(--purple); border-color: var(--purple); background: rgba(168,85,247,0.07); }
+  .chip.amber  { color: var(--amber);  border-color: var(--amber);  background: rgba(245,158,11,0.07); }
+  .chip.rose   { color: var(--rose);   border-color: var(--rose);   background: rgba(251,113,133,0.07); }
 
-  /* ── FLOW ─────────────────────────────────────── */
-  .flow {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    align-items: center;
-  }
+  .flow { display: flex; flex-direction: column; gap: 0; align-items: center; }
 
-  /* Node */
-  .node {
-    width: 100%;
-    max-width: 680px;
-    animation: fadeUp 0.5s ease both;
-  }
-
+  .node { width: 100%; max-width: 720px; animation: fadeUp 0.5s ease both; }
   .node-box {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 18px 24px;
-    position: relative;
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 18px 24px; position: relative;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .node-box:hover {
-    border-color: var(--border-bright);
-    box-shadow: 0 0 24px rgba(59,130,246,0.08);
-  }
-  .node-box.highlight-blue   { border-color: rgba(59,130,246,0.4);  box-shadow: 0 0 20px rgba(59,130,246,0.1); }
-  .node-box.highlight-cyan   { border-color: rgba(6,182,212,0.4);   box-shadow: 0 0 20px rgba(6,182,212,0.1); }
-  .node-box.highlight-green  { border-color: rgba(16,185,129,0.4);  box-shadow: 0 0 20px rgba(16,185,129,0.1); }
+  .node-box:hover { border-color: var(--border-bright); box-shadow: 0 0 24px rgba(59,130,246,0.08); }
+  .node-box.highlight-blue  { border-color: rgba(59,130,246,0.4); box-shadow: 0 0 20px rgba(59,130,246,0.1); }
+  .node-box.highlight-green { border-color: rgba(16,185,129,0.4); box-shadow: 0 0 20px rgba(16,185,129,0.1); }
 
-  .node-inner {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
+  .node-inner { display: flex; align-items: center; gap: 16px; }
   .node-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    flex-shrink: 0;
+    width: 42px; height: 42px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
   }
-  .icon-blue   { background: rgba(59,130,246,0.12);  }
-  .icon-cyan   { background: rgba(6,182,212,0.12);   }
-  .icon-green  { background: rgba(16,185,129,0.12);  }
-  .icon-amber  { background: rgba(245,158,11,0.12);  }
-  .icon-purple { background: rgba(168,85,247,0.12);  }
+  .icon-blue   { background: rgba(59,130,246,0.12); }
+  .icon-cyan   { background: rgba(6,182,212,0.12);  }
+  .icon-green  { background: rgba(16,185,129,0.12); }
+  .icon-amber  { background: rgba(245,158,11,0.12); }
+  .icon-purple { background: rgba(168,85,247,0.12); }
 
   .node-text { flex: 1; }
-  .node-title {
-    font-size: 15px;
-    font-weight: 800;
-    color: var(--white);
-    margin-bottom: 2px;
-  }
-  .node-sub {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.3px;
-  }
+  .node-title { font-size: 15px; font-weight: 800; color: var(--white); margin-bottom: 2px; }
+  .node-sub   { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); letter-spacing: 0.3px; }
 
-  /* Badge */
   .node-badge {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 6px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    flex-shrink: 0;
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 3px 9px; border-radius: 6px; font-weight: 700; letter-spacing: 0.5px; flex-shrink: 0;
   }
   .badge-blue   { background: rgba(59,130,246,0.15);  color: var(--blue);   border: 1px solid rgba(59,130,246,0.3); }
   .badge-cyan   { background: rgba(6,182,212,0.15);   color: var(--cyan);   border: 1px solid rgba(6,182,212,0.3); }
   .badge-green  { background: rgba(16,185,129,0.15);  color: var(--green);  border: 1px solid rgba(16,185,129,0.3); }
   .badge-amber  { background: rgba(245,158,11,0.15);  color: var(--amber);  border: 1px solid rgba(245,158,11,0.3); }
   .badge-purple { background: rgba(168,85,247,0.15);  color: var(--purple); border: 1px solid rgba(168,85,247,0.3); }
+  .badge-rose   { background: rgba(251,113,133,0.15); color: var(--rose);   border: 1px solid rgba(251,113,133,0.3); }
 
-  /* Arrow connector */
-  .arrow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 36px;
-    gap: 0;
-    justify-content: center;
+  /* Route tags on gateway node */
+  .route-tags { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .route-tag {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 3px 10px; border-radius: 5px; letter-spacing: 0.5px;
+    display: flex; align-items: center; gap: 5px;
   }
+  .route-tag.chat  { background: rgba(59,130,246,0.1);  color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+  .route-tag.agent { background: rgba(251,113,133,0.1); color: #fda4af; border: 1px solid rgba(251,113,133,0.25); }
+  .route-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .route-tag.chat  .route-dot { background: var(--blue); }
+  .route-tag.agent .route-dot { background: var(--rose); }
+
+  /* Arrow */
+  .arrow { display: flex; flex-direction: column; align-items: center; height: 36px; justify-content: center; }
   .arrow-line {
-    width: 2px;
-    flex: 1;
+    width: 2px; flex: 1;
     background: linear-gradient(to bottom, var(--border-bright), var(--blue));
-    opacity: 0.6;
+    opacity: 0.6; position: relative; overflow: hidden;
   }
-  .arrow-head {
-    width: 0;
-    height: 0;
-    border-left: 6px solid transparent;
-    border-right: 6px solid transparent;
-    border-top: 8px solid var(--blue);
-    opacity: 0.8;
-  }
-
-  /* ── CLASSIFIER FORK ──────────────────────────── */
-  .classifier-section {
-    width: 100%;
-    animation: fadeUp 0.5s 0.3s ease both;
-  }
-
-  .classifier-label {
-    text-align: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .fork-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    position: relative;
-  }
-
-  /* top bar connecting fork */
-  .fork-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: calc(16.66% + 6px);
-    right: calc(16.66% + 6px);
-    height: 2px;
-    background: linear-gradient(90deg, var(--general), var(--knowledge), var(--action));
-    opacity: 0.5;
-    border-radius: 2px;
-  }
-
-  .branch {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .branch-arrow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    height: 28px;
-    justify-content: center;
-  }
-  .branch-line {
-    width: 2px;
-    flex: 1;
-  }
-  .branch-head {
-    width: 0; height: 0;
-    border-left: 5px solid transparent;
-    border-right: 5px solid transparent;
-  }
-
-  .branch.general .branch-line { background: var(--general); opacity: 0.6; }
-  .branch.general .branch-head { border-top: 7px solid var(--general); opacity: 0.8; }
-  .branch.knowledge .branch-line { background: var(--knowledge); opacity: 0.6; }
-  .branch.knowledge .branch-head { border-top: 7px solid var(--knowledge); opacity: 0.8; }
-  .branch.action .branch-line { background: var(--action); opacity: 0.6; }
-  .branch.action .branch-head { border-top: 7px solid var(--action); opacity: 0.8; }
-
-  .branch-node {
-    background: var(--panel);
-    border-radius: 10px;
-    padding: 14px 16px;
-    border: 1px solid;
-  }
-  .branch-node.general  { border-color: rgba(6,182,212,0.3);   background: var(--general-bg); }
-  .branch-node.knowledge{ border-color: rgba(168,85,247,0.3);  background: var(--knowledge-bg); }
-  .branch-node.action   { border-color: rgba(245,158,11,0.3);  background: var(--action-bg); }
-
-  .branch-title {
-    font-size: 12px;
-    font-weight: 800;
-    margin-bottom: 4px;
-  }
-  .branch-title.general  { color: var(--general); }
-  .branch-title.knowledge{ color: var(--knowledge); }
-  .branch-title.action   { color: var(--action); }
-
-  .branch-desc {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    line-height: 1.5;
-    margin-bottom: 8px;
-  }
-
-  .branch-step {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    padding: 5px 8px;
-    border-radius: 6px;
-    margin-bottom: 5px;
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    line-height: 1.4;
-  }
-  .branch-step .step-dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 4px;
-  }
-  .branch-step.general  { background: rgba(6,182,212,0.06);   color: #7dd3e8; }
-  .branch-step.general .step-dot  { background: var(--general); }
-  .branch-step.knowledge{ background: rgba(168,85,247,0.06);  color: #c084f5; }
-  .branch-step.knowledge .step-dot{ background: var(--knowledge); }
-  .branch-step.action   { background: rgba(245,158,11,0.06);  color: #fbbf24; }
-  .branch-step.action .step-dot  { background: var(--action); }
-
-  /* merge arrow */
-  .merge-arrow {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    height: 44px;
-    position: relative;
-    animation: fadeUp 0.5s 0.5s ease both;
-  }
-  .merge-line-left, .merge-line-right, .merge-line-center {
-    position: absolute;
-    bottom: 0;
-  }
-  .merge-svg {
-    width: 100%;
-    height: 44px;
-    overflow: visible;
-  }
-
-  /* Legend */
-  .legend {
-    margin-top: 40px;
-    display: flex;
-    justify-content: center;
-    gap: 24px;
-    flex-wrap: wrap;
-    animation: fadeUp 0.5s 0.8s ease both;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-  .legend-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-  }
-
-  /* Animations */
-  @keyframes fadeDown {
-    from { opacity: 0; transform: translateY(-16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(18px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .node:nth-child(1) { animation-delay: 0.0s; }
-  .node:nth-child(3) { animation-delay: 0.15s; }
-  .node:nth-child(5) { animation-delay: 0.25s; }
-
-  /* pulse on LLM node */
-  .llm-glow::after {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    border-radius: 13px;
-    border: 1px solid rgba(59,130,246,0.5);
-    animation: pulse 2.5s ease-in-out infinite;
-    pointer-events: none;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 0.2; transform: scale(1); }
-    50%       { opacity: 0.7; transform: scale(1.01); }
-  }
-
-  /* data flow animation on lines */
-  .arrow-line { position: relative; overflow: hidden; }
   .arrow-line::after {
-    content: '';
-    position: absolute;
-    top: -100%;
-    left: 0;
-    width: 100%;
-    height: 50%;
+    content: ''; position: absolute; top: -100%; left: 0;
+    width: 100%; height: 50%;
     background: linear-gradient(to bottom, transparent, rgba(59,130,246,0.8), transparent);
     animation: flowDown 2s ease-in-out infinite;
   }
-  @keyframes flowDown {
-    0%   { top: -100%; opacity: 0; }
-    30%  { opacity: 1; }
-    70%  { opacity: 1; }
-    100% { top: 100%;  opacity: 0; }
+  .arrow-head { width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 8px solid var(--blue); opacity: 0.8; }
+
+  /* Mode fork */
+  .mode-fork-wrap { width: 100%; max-width: 720px; animation: fadeUp 0.5s 0.2s ease both; }
+  .mode-fork-label {
+    text-align: center; font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 8px;
   }
+  .mode-fork-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .mode-box { border-radius: 10px; padding: 14px 16px; border: 1px solid; }
+  .mode-box.classic    { background: rgba(59,130,246,0.05);  border-color: rgba(59,130,246,0.3); }
+  .mode-box.react-mode { background: rgba(251,113,133,0.05); border-color: rgba(251,113,133,0.3); position: relative; }
+  .mode-new-badge {
+    position: absolute; top: -9px; right: 12px;
+    font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    background: var(--rose); color: #1a0010; letter-spacing: 1px;
+  }
+  .mode-title { font-size: 12px; font-weight: 800; margin-bottom: 3px; }
+  .mode-title.classic    { color: var(--blue); }
+  .mode-title.react-mode { color: var(--rose); }
+  .mode-route { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-bottom: 8px; }
+  .mode-step {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 4px 8px; border-radius: 5px; margin-bottom: 4px;
+    display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
+  }
+  .mode-step-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .mode-step.classic { background: rgba(59,130,246,0.06);  color: #93c5fd; }
+  .mode-step.classic .mode-step-dot { background: var(--blue); }
+  .mode-step.react   { background: rgba(251,113,133,0.06); color: #fda4af; }
+  .mode-step.react   .mode-step-dot { background: var(--rose); }
+
+  /* Classifier fork */
+  .classifier-section { width: 100%; animation: fadeUp 0.5s 0.35s ease both; }
+  .classifier-label {
+    text-align: center; font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--muted); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  .fork-container { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; position: relative; }
+  .fork-container::before {
+    content: ''; position: absolute; top: 0;
+    left: calc(16.66% + 6px); right: calc(16.66% + 6px);
+    height: 2px;
+    background: linear-gradient(90deg, var(--general), var(--knowledge), var(--action));
+    opacity: 0.5; border-radius: 2px;
+  }
+  .branch { display: flex; flex-direction: column; gap: 10px; }
+  .branch.general   .branch-line { background: var(--general);   opacity: 0.6; }
+  .branch.general   .branch-head { border-top: 7px solid var(--general);   opacity: 0.8; }
+  .branch.knowledge .branch-line { background: var(--knowledge); opacity: 0.6; }
+  .branch.knowledge .branch-head { border-top: 7px solid var(--knowledge); opacity: 0.8; }
+  .branch.action    .branch-line { background: var(--action);    opacity: 0.6; }
+  .branch.action    .branch-head { border-top: 7px solid var(--action);    opacity: 0.8; }
+
+  .branch-arrow { display: flex; flex-direction: column; align-items: center; height: 28px; justify-content: center; }
+  .branch-line  { width: 2px; flex: 1; }
+  .branch-head  { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; }
+
+  .branch-node { background: var(--panel); border-radius: 10px; padding: 14px 16px; border: 1px solid; }
+  .branch-node.general   { border-color: rgba(6,182,212,0.3);  background: var(--general-bg); }
+  .branch-node.knowledge { border-color: rgba(168,85,247,0.3); background: var(--knowledge-bg); }
+  .branch-node.action    { border-color: rgba(245,158,11,0.3); background: var(--action-bg); }
+
+  .branch-title { font-size: 12px; font-weight: 800; margin-bottom: 4px; }
+  .branch-title.general   { color: var(--general); }
+  .branch-title.knowledge { color: var(--knowledge); }
+  .branch-title.action    { color: var(--action); }
+  .branch-desc  { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.5; margin-bottom: 8px; }
+  .branch-step  {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 5px 8px; border-radius: 6px; margin-bottom: 5px;
+    display: flex; align-items: flex-start; gap: 6px; line-height: 1.4;
+  }
+  .branch-step .step-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .branch-step.general   { background: rgba(6,182,212,0.06);  color: #7dd3e8; }
+  .branch-step.general   .step-dot { background: var(--general); }
+  .branch-step.knowledge { background: rgba(168,85,247,0.06); color: #c084f5; }
+  .branch-step.knowledge .step-dot { background: var(--knowledge); }
+  .branch-step.action    { background: rgba(245,158,11,0.06); color: #fbbf24; }
+  .branch-step.action    .step-dot { background: var(--action); }
+
+  /* ReAct loop panel */
+  .react-loop-section { width: 100%; animation: fadeUp 0.5s 0.4s ease both; }
+  .react-loop-label {
+    text-align: center; font-family: 'Space Mono', monospace;
+    font-size: 10px; color: var(--rose); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 8px; opacity: 0.7;
+  }
+  .react-loop-box {
+    background: var(--react-bg);
+    border: 1px solid rgba(251,113,133,0.3);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .react-loop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .react-loop-title    { font-size: 13px; font-weight: 800; color: var(--rose); }
+  .react-loop-subtitle { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
+  .react-safety-badge  {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 3px 10px; border-radius: 5px; font-weight: 700;
+    background: rgba(245,158,11,0.12); color: var(--amber);
+    border: 1px solid rgba(245,158,11,0.3); white-space: nowrap;
+  }
+
+  /* TAO row */
+  .tao-steps { display: flex; gap: 0; align-items: stretch; margin-bottom: 14px; }
+  .tao-step { flex: 1; border-radius: 8px; padding: 12px 12px; display: flex; flex-direction: column; gap: 5px; position: relative; }
+  .tao-step.thought { background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.25); }
+  .tao-step.act     { background: rgba(251,191,36,0.08);  border: 1px solid rgba(251,191,36,0.25);  margin: 0 8px; }
+  .tao-step.observe { background: rgba(45,212,191,0.08);  border: 1px solid rgba(45,212,191,0.25); }
+
+  .tao-label { font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+  .tao-step.thought .tao-label { color: #a78bfa; }
+  .tao-step.act     .tao-label { color: var(--amber); }
+  .tao-step.observe .tao-label { color: #2dd4bf; }
+
+  .tao-desc { font-family: 'Space Mono', monospace; font-size: 10px; line-height: 1.5; }
+  .tao-step.thought .tao-desc { color: #c4b5fd; }
+  .tao-step.act     .tao-desc { color: #fcd34d; }
+  .tao-step.observe .tao-desc { color: #5eead4; }
+
+  .tao-arrow { position: absolute; right: -13px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); z-index: 2; }
+
+  /* Loop-back bar */
+  .loop-back {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+    padding: 8px 12px;
+    background: rgba(251,113,133,0.05);
+    border: 1px dashed rgba(251,113,133,0.2);
+    border-radius: 7px;
+  }
+  .loop-back-icon { font-size: 14px; }
+  .loop-back-text { font-family: 'Space Mono', monospace; font-size: 10px; color: #fda4af; line-height: 1.5; flex: 1; }
+
+  /* Tool registry */
+  .tool-registry-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1px; margin-bottom: 6px; text-transform: uppercase; }
+  .tool-registry { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tool-pill {
+    font-family: 'Space Mono', monospace; font-size: 10px;
+    padding: 3px 10px; border-radius: 5px;
+    background: rgba(251,113,133,0.07); color: #fda4af;
+    border: 1px solid rgba(251,113,133,0.2);
+  }
+
+  /* Section divider */
+  .section-divider {
+    width: 100%; max-width: 720px;
+    display: flex; align-items: center; gap: 12px;
+    margin: 4px 0; animation: fadeUp 0.5s 0.28s ease both;
+  }
+  .divider-line { flex: 1; height: 1px; background: var(--border); }
+  .divider-text { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; white-space: nowrap; }
+
+  /* LLM pulse */
+  .llm-glow::after {
+    content: ''; position: absolute; inset: -1px; border-radius: 13px;
+    border: 1px solid rgba(59,130,246,0.5);
+    animation: pulse 2.5s ease-in-out infinite; pointer-events: none;
+  }
+
+  /* Legend */
+  .legend { margin-top: 44px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; animation: fadeUp 0.5s 0.9s ease both; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+  .legend-dot  { width: 8px; height: 8px; border-radius: 50%; }
+
+  @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeUp   { from { opacity: 0; transform: translateY(18px);  } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse    { 0%, 100% { opacity: 0.2; transform: scale(1); } 50% { opacity: 0.7; transform: scale(1.01); } }
+  @keyframes flowDown { 0% { top: -100%; opacity: 0; } 30% { opacity: 1; } 70% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
+
+  .node:nth-child(1) { animation-delay: 0.0s; }
+  .node:nth-child(3) { animation-delay: 0.12s; }
+  .node:nth-child(5) { animation-delay: 0.22s; }
 </style>
 </head>
 <body>
 <div class="canvas">
 
-  <!-- Header -->
   <div class="header">
-    <div class="header-label">Architecture Overview</div>
+    <div class="header-label">Architecture Overview — v2</div>
     <h1>AI Agent Chatbot — OneYotta Portal</h1>
-    <p>FastAPI · Llama/Mistral 7B · FAISS · nomic-embed-text</p>
+    <p>FastAPI · Mistral 7B (Ollama) · FAISS · nomic-embed-text · ReAct Agent Loop</p>
   </div>
 
-  <!-- Stack chips -->
   <div class="stack-chips">
     <span class="chip blue">FastAPI</span>
-    <span class="chip cyan">Llama / Mistral 7B</span>
+    <span class="chip cyan">Mistral 7B (Ollama)</span>
     <span class="chip green">FAISS Vector DB</span>
     <span class="chip purple">nomic-embed-text</span>
-    <span class="chip amber">REST Backend APIs</span>
+    <span class="chip amber">Zabbix Client</span>
+    <span class="chip rose">ReAct Agent Loop</span>
+    <span class="chip rose">Tool Registry</span>
   </div>
 
-  <!-- Flow -->
   <div class="flow">
 
-    <!-- Node 1: User -->
+    <!-- User -->
     <div class="node">
       <div class="node-box">
         <div class="node-inner">
           <div class="node-icon icon-blue">👤</div>
           <div class="node-text">
             <div class="node-title">OneYotta Portal User</div>
-            <div class="node-sub">Sends a natural language query via the One Yotta portal chat UI</div>
+            <div class="node-sub">Sends a natural language query via the portal chat UI</div>
           </div>
           <span class="node-badge badge-blue">INPUT</span>
         </div>
@@ -466,40 +361,92 @@
 
     <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
 
-    <!-- Node 2: FastAPI -->
+    <!-- FastAPI Gateway — with dual route tags -->
     <div class="node">
       <div class="node-box highlight-blue">
         <div class="node-inner">
           <div class="node-icon icon-blue">⚡</div>
           <div class="node-text">
             <div class="node-title">FastAPI Gateway</div>
-            <div class="node-sub">Receives POST /chat — validates input, manages session context, routes to pipeline</div>
+            <div class="node-sub">Validates input · manages session context · routes to pipeline or agent loop</div>
+            <div class="route-tags">
+              <span class="route-tag chat"><span class="route-dot"></span>POST /chat → Classic Pipeline</span>
+              <span class="route-tag agent"><span class="route-dot"></span>POST /agent → ReAct Loop</span>
+            </div>
           </div>
           <span class="node-badge badge-blue">FastAPI</span>
         </div>
       </div>
     </div>
 
+    <!-- Fork SVG -->
+    <div style="height:28px; width:100%; max-width:720px; display:flex; align-items:flex-end; justify-content:center;">
+      <svg width="100%" height="28" style="overflow:visible;">
+        <line x1="50%" y1="0" x2="28%" y2="28" stroke="rgba(59,130,246,0.45)"   stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="50%" y1="0" x2="76%" y2="28" stroke="rgba(251,113,133,0.45)"  stroke-width="1.5" stroke-dasharray="4 3"/>
+      </svg>
+    </div>
+
+    <!-- Mode fork grid -->
+    <div class="mode-fork-wrap">
+      <div class="mode-fork-label">— Routing Mode —</div>
+      <div class="mode-fork-grid">
+        <div class="mode-box classic">
+          <div class="mode-title classic">🔀 Classic Pipeline</div>
+          <div class="mode-route">POST /chat · single-hop · intent-classified</div>
+          <div class="mode-step classic"><span class="mode-step-dot"></span>LLM classifies intent (info / knowledge / action)</div>
+          <div class="mode-step classic"><span class="mode-step-dot"></span>Routes to matching handler branch</div>
+          <div class="mode-step classic"><span class="mode-step-dot"></span>Single LLM call per request</div>
+          <div class="mode-step classic"><span class="mode-step-dot"></span>Best for simple, single-step queries</div>
+        </div>
+        <div class="mode-box react-mode">
+          <div class="mode-new-badge">NEW</div>
+          <div class="mode-title react-mode">🤖 ReAct Agent</div>
+          <div class="mode-route">POST /agent · multi-step · tool-calling loop</div>
+          <div class="mode-step react"><span class="mode-step-dot"></span>Iterative Thought → Action → Observation</div>
+          <div class="mode-step react"><span class="mode-step-dot"></span>Decorator-based tool registry (5 tools)</div>
+          <div class="mode-step react"><span class="mode-step-dot"></span>Scratchpad-as-message-history (Mistral workaround)</div>
+          <div class="mode-step react"><span class="mode-step-dot"></span>Safety ceiling: MAX_STEPS = 6</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Merge back -->
+    <div style="height:28px; width:100%; max-width:720px; display:flex; align-items:flex-end; justify-content:center;">
+      <svg width="100%" height="28" style="overflow:visible;">
+        <line x1="28%" y1="0" x2="50%" y2="28" stroke="rgba(59,130,246,0.45)"  stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="76%" y1="0" x2="50%" y2="28" stroke="rgba(251,113,133,0.45)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <polygon points="50%,28 calc(50% - 5px),21 calc(50% + 5px),21" fill="rgba(59,130,246,0.6)"/>
+      </svg>
+    </div>
+
+    <!-- Section divider: Classic path -->
+    <div class="section-divider">
+      <div class="divider-line"></div>
+      <div class="divider-text">Classic Pipeline — POST /chat</div>
+      <div class="divider-line"></div>
+    </div>
+
     <div class="arrow"><div class="arrow-line"></div><div class="arrow-head"></div></div>
 
-    <!-- Node 3: LLM Classifier -->
+    <!-- Intent Classifier -->
     <div class="node">
       <div class="node-box llm-glow" style="border-color:rgba(59,130,246,0.4);">
         <div class="node-inner">
           <div class="node-icon icon-cyan">🔍</div>
           <div class="node-text">
             <div class="node-title">Intent Classifier</div>
-            <div class="node-sub">LLM prompt → classifies query into one of three intent types</div>
+            <div class="node-sub">LLM prompt → classifies query into one of three intent categories</div>
           </div>
           <span class="node-badge badge-cyan">Mistral 7B</span>
         </div>
       </div>
     </div>
 
-    <!-- Classifier fork -->
-    <div style="height:28px; display:flex; align-items:flex-end; justify-content:center; width:100%; max-width:680px;">
+    <!-- Classifier fork SVG -->
+    <div style="height:28px; display:flex; align-items:flex-end; justify-content:center; width:100%; max-width:720px;">
       <svg width="100%" height="28" style="overflow:visible;">
-        <line x1="50%" y1="0" x2="16.66%" y2="28" stroke="rgba(6,182,212,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="50%" y1="0" x2="16.66%" y2="28" stroke="rgba(6,182,212,0.5)"  stroke-width="1.5" stroke-dasharray="4 3"/>
         <line x1="50%" y1="0" x2="50%"    y2="28" stroke="rgba(168,85,247,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
         <line x1="50%" y1="0" x2="83.33%" y2="28" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
       </svg>
@@ -510,17 +457,16 @@
       <div class="classifier-label">— Intent Classification —</div>
       <div class="fork-container">
 
-        <!-- GENERAL -->
         <div class="branch general">
           <div class="branch-node general">
             <div class="branch-title general">🌐 General Info</div>
             <div class="branch-desc">Direct conversational queries — no external data needed</div>
             <div class="branch-step general"><span class="step-dot"></span>Prompt sent directly to LLM with system context</div>
-            <div class="branch-step general"><span class="step-dot"></span>e.g. "What is a data center?" / "How does colocation work?"</div>
+            <div class="branch-step general"><span class="step-dot"></span>Single LLM call, no tool use</div>
+            <div class="branch-step general"><span class="step-dot"></span>e.g. "What is a data center?" / "How does PUE work?"</div>
           </div>
         </div>
 
-        <!-- KNOWLEDGE -->
         <div class="branch knowledge">
           <div class="branch-node knowledge">
             <div class="branch-title knowledge">📚 Knowledge (RAG)</div>
@@ -532,72 +478,132 @@
           </div>
         </div>
 
-        <!-- ACTION -->
+        <!-- Action branch — updated with tool dispatch detail -->
         <div class="branch action">
           <div class="branch-node action">
-            <div class="branch-title action">⚙️ Action</div>
-            <div class="branch-desc">Operational requests that trigger backend API calls</div>
-            <div class="branch-step action"><span class="step-dot"></span>LLM extracts intent + parameters from query</div>
-            <div class="branch-step action"><span class="step-dot"></span>Maps to backend API endpoint + payload</div>
-            <div class="branch-step action"><span class="step-dot"></span>API result returned as structured data</div>
-            <div class="branch-step action"><span class="step-dot"></span>e.g. "Show my current power usage" / "Raise a ticket"</div>
+            <div class="branch-title action">⚙️ Action (Tool Call)</div>
+            <div class="branch-desc">Operational requests that fetch live Zabbix metrics</div>
+            <div class="branch-step action"><span class="step-dot"></span>LLM extracts tool name + params from query</div>
+            <div class="branch-step action"><span class="step-dot"></span>Dispatches: get_cpu_usage / get_power_usage</div>
+            <div class="branch-step action"><span class="step-dot"></span>Raw metric → LLM for natural language explanation</div>
+            <div class="branch-step action"><span class="step-dot"></span>e.g. "Show PROD1 CPU" / "RACK-A1 power draw"</div>
           </div>
         </div>
 
       </div>
     </div>
 
-    <!-- Merge arrows -->
-    <div style="height:36px; width:100%; max-width:680px; animation: fadeUp 0.5s 0.5s ease both; opacity:0; animation-fill-mode:both;">
+    <!-- Merge -->
+    <div style="height:36px; width:100%; max-width:720px; animation: fadeUp 0.5s 0.55s ease both; opacity:0; animation-fill-mode:both;">
       <svg width="100%" height="36" style="overflow:visible;">
-        <line x1="16.66%" y1="0" x2="50%" y2="36" stroke="rgba(6,182,212,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
+        <line x1="16.66%" y1="0" x2="50%" y2="36" stroke="rgba(6,182,212,0.5)"  stroke-width="1.5" stroke-dasharray="4 3"/>
         <line x1="50%"    y1="0" x2="50%" y2="36" stroke="rgba(168,85,247,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
         <line x1="83.33%" y1="0" x2="50%" y2="36" stroke="rgba(245,158,11,0.5)" stroke-width="1.5" stroke-dasharray="4 3"/>
-        <!-- arrowhead -->
         <polygon points="50%,36 calc(50% - 6px),27 calc(50% + 6px),27" fill="rgba(59,130,246,0.7)"/>
       </svg>
     </div>
 
-    <!-- Node: LLM Response Gen -->
-    <div class="node" style="animation-delay:0.55s;">
+    <!-- LLM Response Gen -->
+    <div class="node" style="animation-delay:0.6s;">
       <div class="node-box llm-glow" style="border-color:rgba(59,130,246,0.5);">
         <div class="node-inner">
           <div class="node-icon icon-cyan">🤖</div>
           <div class="node-text">
             <div class="node-title">LLM Response Generation</div>
-            <div class="node-sub">Llama / Mistral 7B synthesizes a final answer from: query + retrieved context (RAG chunks or API data)</div>
+            <div class="node-sub">Mistral 7B synthesizes final answer from query + retrieved context (RAG chunks or Zabbix data)</div>
           </div>
           <span class="node-badge badge-cyan">Mistral 7B</span>
         </div>
       </div>
     </div>
 
-    <div class="arrow" style="animation-delay:0.65s;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+    <div class="arrow" style="animation-delay:0.7s;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
 
-    <!-- Node: FastAPI Response -->
-    <div class="node" style="animation-delay:0.7s;">
+    <!-- Section divider: ReAct path -->
+    <div class="section-divider" style="animation-delay:0.72s;">
+      <div class="divider-line" style="background: rgba(251,113,133,0.25);"></div>
+      <div class="divider-text" style="color: rgba(251,113,133,0.8);">ReAct Agent Loop — POST /agent</div>
+      <div class="divider-line" style="background: rgba(251,113,133,0.25);"></div>
+    </div>
+
+    <!-- ReAct loop panel -->
+    <div class="react-loop-section" style="max-width:720px; width:100%; margin-bottom: 0;">
+      <div class="react-loop-label">— Thought · Action · Observation repeats until FORMAT B final answer or MAX_STEPS —</div>
+      <div class="react-loop-box">
+
+        <div class="react-loop-header">
+          <div>
+            <div class="react-loop-title">🔁 ReAct Agent Loop</div>
+            <div class="react-loop-subtitle">Multi-step reasoning · scratchpad-as-message-history · loop detection</div>
+          </div>
+          <div class="react-safety-badge">MAX_STEPS = 6</div>
+        </div>
+
+        <!-- TAO steps -->
+        <div class="tao-steps">
+          <div class="tao-step thought">
+            <div class="tao-label">💭 Thought</div>
+            <div class="tao-desc">LLM reasons about what to do next. Emits FORMAT A JSON to call a tool.</div>
+            <div class="tao-arrow">→</div>
+          </div>
+          <div class="tao-step act">
+            <div class="tao-label">🔧 Action</div>
+            <div class="tao-desc">Tool dispatcher calls registered function with extracted params.</div>
+            <div class="tao-arrow">→</div>
+          </div>
+          <div class="tao-step observe">
+            <div class="tao-label">👁 Observation</div>
+            <div class="tao-desc">Tool result injected back as user turn. LLM decides: next tool (A) or answer (B).</div>
+          </div>
+        </div>
+
+        <!-- Loop-back indicator -->
+        <div class="loop-back">
+          <div class="loop-back-icon">↩</div>
+          <div class="loop-back-text">
+            Observation appended to scratchpad (message history) → loop repeats · duplicate call detection prevents infinite loops · FORMAT B emits final_answer and terminates
+          </div>
+        </div>
+
+        <!-- Tool registry -->
+        <div class="tool-registry-label">Registered tools — stub stubs → swap to real Zabbix calls</div>
+        <div class="tool-registry">
+          <span class="tool-pill">get_server_cpu</span>
+          <span class="tool-pill">get_rack_power</span>
+          <span class="tool-pill">list_servers_in_rack</span>
+          <span class="tool-pill">list_available_racks</span>
+          <span class="tool-pill">get_cooling_status</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="arrow" style="animation-delay:0.85s;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+
+    <!-- FastAPI Response -->
+    <div class="node" style="animation-delay:0.9s;">
       <div class="node-box highlight-green">
         <div class="node-inner">
           <div class="node-icon icon-green">📤</div>
           <div class="node-text">
             <div class="node-title">FastAPI Response Handler</div>
-            <div class="node-sub">Formats response payload, updates session context, streams to frontend</div>
+            <div class="node-sub">/chat → {"reply": "..."} · /agent → {final_answer, steps[], total_steps}</div>
           </div>
           <span class="node-badge badge-green">FastAPI</span>
         </div>
       </div>
     </div>
 
-    <div class="arrow" style="animation-delay:0.8s;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
+    <div class="arrow" style="animation-delay:1.0s;"><div class="arrow-line"></div><div class="arrow-head"></div></div>
 
-    <!-- Node: User Response -->
-    <div class="node" style="animation-delay:0.85s;">
+    <!-- Output -->
+    <div class="node" style="animation-delay:1.05s;">
       <div class="node-box">
         <div class="node-inner">
           <div class="node-icon icon-green">💬</div>
           <div class="node-text">
             <div class="node-title">Response Delivered to User</div>
-            <div class="node-sub">Rendered in the portal chat UI — conversational, context-aware, grounded in real data</div>
+            <div class="node-sub">Chat UI (chat.html) · or ReAct trace viewer (agent.html) — verbose Thought / Action / Observation timeline</div>
           </div>
           <span class="node-badge badge-green">OUTPUT</span>
         </div>
@@ -606,11 +612,11 @@
 
   </div><!-- /flow -->
 
-  <!-- Legend -->
   <div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--general)"></div>General Info path</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--knowledge)"></div>Knowledge / RAG path</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--action)"></div>Action / API path</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--action)"></div>Action / Zabbix path</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--rose)"></div>ReAct Agent loop</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div>FastAPI layer</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--cyan)"></div>LLM (Mistral 7B)</div>
   </div>

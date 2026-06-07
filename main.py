@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from llm import call_ollama_chat_explain, intent_classification, generate_general_info, parse_action, generate_with_rag, process_llm_call
+from llm import call_ollama_chat_explain, intent_classification, generate_general_info, parse_action, generate_with_rag, prepare_chat_context_payload, process_llm_call
 import requests  # if calling local llama / ollama
 from rag.ingest import handle_file
 from agent.react_agent import run_react_agent
@@ -89,12 +89,15 @@ async def chat(payload: ChatRequest,
         chat_context = [json.loads(msg) for msg in raw_history]
 
         print(f"Current chat history for session_id {session_id}: {chat_context}")
+        print(f"Current chat history  {chat_context}")
         user_msg_obj = MessageStore(role="user", text=user_message, timestamp=current_time)
         await redis_client.rpush(history_key, user_msg_obj.model_dump_json())
 
         print(f"Received user message: {user_message}")
 
-        ai_reply_text = process_llm_call(user_message)
+        chat_context_payload = prepare_chat_context_payload(user_message, chat_context)
+
+        ai_reply_text = process_llm_call(chat_context_payload)
 
         # ai_reply_text = f"Hey! This is a real response from your FastAPI backend stored directly inside Redis list: {history_key}."
         bot_msg_obj = MessageStore(role="bot", text=ai_reply_text, timestamp=time.time())

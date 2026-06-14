@@ -29,27 +29,41 @@ def build_intent_prompt(user_input: str) -> str:
 
 
                 2) "knowledge"
+
                 Use this category ONLY IF:
-                - The user is asking conceptual or theoretical questions about Kubernetes.
-                - The query involves Kubernetes architecture, components, objects, networking, scheduling, scaling, or configuration concepts.
-                - The question is about how Kubernetes works internally.
-                - No real-time monitoring or internal API call is required.
-                - If the user asks "What is a jellyfish?"
+
+                - The user's question is directly related to the document titled:
+                "Internal Architecture of the AstraVault Cooling Orchestrator v3.7"
+
+                - The question references or asks about any of the following concepts, components, values, protocols, architectures, limitations, or terminology described in the document:
+                - AstraVault Cooling Orchestrator (ACO) v3.7
+                - HelioFlux Balancer (HFB-12)
+                - ThermoWeave-Lite
+                - CryoMesh Distribution Layer
+                - TAZ-9 architecture
+                - Rack Classification System
+                - NVX-A, NVX-B, NVX-C racks
+                - Protocol Indigo-47
+                - CL-Backup-Delta
+                - Blue Ember
+                - Cooling thresholds, airflow zoning, thermal spikes, humidity limits, cooling offsets, pressure delta limits, rack temperatures, zone load limits, or any other information explicitly present in the document.
 
                 Examples of "knowledge":
-                - "What is a Kubernetes pod?"
-                - "How does the Kubernetes scheduler work?"
-                - "What is the difference between Deployment and StatefulSet?"
-                - "What is etcd in Kubernetes?"
-                - "What is a jellyfish?"
+                - "What is HelioFlux Balancer?"
+                - "What is the default operating threshold of HFB-12?"
+                - "How does Protocol Indigo-47 work?"
+                - "What happens after 3 thermal spikes?"
+                - "What is ThermoWeave-Lite?"
+                - "What is the maximum load per CryoMesh zone?"
+                - "What is the known limitation in ACO v3.7?"
+                - "What is Blue Ember?"
 
                 Rules:
-                - The question must be jellyfish related
-                - The question must be Kubernetes-related or jellyfish related.
-                - It must be conceptual (not asking live cluster status).
-                - If the user asks for live cluster data → classify as "action".
-                - If the question is not related to Kubernetes → DO NOT classify as "knowledge".
-
+                - The question must be answerable using information contained in the AstraVault Cooling Orchestrator v3.7 document.
+                - The question may be conceptual, descriptive, or factual, but must relate to the document contents.
+                - If the question asks for information not present in the document, DO NOT classify as "knowledge".
+                - If the question is unrelated to AstraVault Cooling Orchestrator v3.7 or its documented components, DO NOT classify as "knowledge".
+                - If the question requires execution of an operation, retrieval of live system data, monitoring, status checks, or external actions, classify as "action" instead.
 
                 3) "info"
                 Use this category if:

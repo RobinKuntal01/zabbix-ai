@@ -59,8 +59,8 @@ async def add_dox_ui(request: Request):
 
 @app.post("/upload-dox", response_class=HTMLResponse)
 async def add_dox(file: UploadFile = File(...)):
-    if not file.filename.endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="Only PDF files are accepted.")
+    if not file.filename.endswith((".pdf", ".txt")):
+        raise HTTPException(status_code=400, detail="Only PDF and text files are accepted.")
     
     return JSONResponse(await handle_file(file))
 
@@ -97,7 +97,7 @@ async def chat(payload: ChatRequest,
 
         chat_context_payload = prepare_chat_context_payload(user_message, chat_context)
 
-        ai_reply_text = process_llm_call(chat_context_payload)
+        ai_reply_text = process_llm_call(user_message)
 
         # ai_reply_text = f"Hey! This is a real response from your FastAPI backend stored directly inside Redis list: {history_key}."
         bot_msg_obj = MessageStore(role="bot", text=ai_reply_text, timestamp=time.time())

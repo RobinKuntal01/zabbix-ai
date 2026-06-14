@@ -5,16 +5,15 @@ from config import OLLAMA_GENERATE_URL, JOKE_URL, OLLAMA_CHAT_URL
 import requests
 from rag.rag_pipeline import answer_with_rag
 
-def call_ollama_generate(chat_context_payload: dict) -> dict:
+def call_ollama_generate(prompt: str) -> dict:
     response = requests.post(OLLAMA_GENERATE_URL,
-        json=chat_context_payload
+        json={
+            "model": "mistral",
+            "prompt": prompt,
+            "stream": False
+        }
     )
-    try:
-        return response.json()
-    except ValueError:
-        print(f"call_ollama_generate: failed to parse JSON response: {response.text}")
-        return {}
-
+    return response.json()
 
 def call_ollama_chat(chat_context_payload: dict) -> dict:
     response = requests.post(
@@ -149,60 +148,57 @@ def prepare_chat_context_payload(new_user_message: str, chat_history: list):
 
 
 
-def process_llm_call(chat_context_payload: dict) -> str:
+def process_llm_call(user_message: str) -> str:
     print("Processing LLM call...")
 
-    # # intent_result = intent_classification(user_message)
+    intent_result = intent_classification(user_message)
 
-    # intent_result["category"] = 'info'
-    # category = intent_result["category"]
-    # category['category'] = 'info'  # For testing, force all messages into "info" category
-    category = {}
-    category['category'] = 'info'  # For testing, force all messages into "info" category
+    
+    category = intent_result["category"]
     print(f"Intent classification category: {category}")
 
     if category['category'] == "info":
         print("Handling info category")
-        return generate_general_info(chat_context_payload)
+        return generate_general_info(user_message)
 
-    # elif category['category'] == "knowledge":
-    #     print("Handling knowledge category")
-    #     return generate_with_rag(user_message)
+    elif category['category'] == "knowledge":
+        print("Handling knowledge category")
+        return generate_with_rag(user_message)
 
-    # elif category['category'] == "action":
-    #     print('Handling action category')
-    #     try:
-    #         res_parse_action = json.loads(parse_action(user_message))
-    #     except json.JSONDecodeError as e:
-    #         print(f"Failed to parse action JSON: {e}")
-    #         return generate_general_info(user_message)
+    elif category['category'] == "action":
+        print('Handling action category')
+        try:
+            res_parse_action = json.loads(parse_action(user_message))
+        except json.JSONDecodeError as e:
+            print(f"Failed to parse action JSON: {e}")
+            return generate_general_info(user_message)
 
-    #     print(f"Parsed tool: {res_parse_action}")
+        print(f"Parsed tool: {res_parse_action}")
 
-    #     tool = res_parse_action.get('action', '')
-    #     arguments = res_parse_action.get('arguments', {})
+        tool = res_parse_action.get('action', '')
+        arguments = res_parse_action.get('arguments', {})
 
-    #     allowed_tools = ["get_cpu_usage", "get_power_usage"]
-    #     if tool in allowed_tools:
-    #         try:
-    #             if tool == "get_cpu_usage":
-    #                 cpu_info = get_cpu_usage(arguments)
-    #                 explanation = call_ollama_chat_explain(cpu_info)
-    #                 print(f"Explanation for CPU usage: {explanation}")
-    #                 return explanation
+        allowed_tools = ["get_cpu_usage", "get_power_usage"]
+        if tool in allowed_tools:
+            try:
+                if tool == "get_cpu_usage":
+                    cpu_info = get_cpu_usage(arguments)
+                    explanation = call_ollama_chat_explain(cpu_info)
+                    print(f"Explanation for CPU usage: {explanation}")
+                    return explanation
 
-    #             elif tool == "get_power_usage":
-    #                 power_info = get_power_usage(arguments)
-    #                 explanation = call_ollama_chat_explain(power_info)
-    #                 print(f"Explanation for power usage: {explanation}")
-    #                 return explanation
-    #         except Exception as e:
-    #             print(f"Error calling tool {tool}: {e}")
-    #             return generate_general_info(user_message)
-    #     else:
-    #         print(f"Unknown tool '{tool}' received from LLM, defaulting to info response.")
-    #         return generate_general_info(user_message)
+                elif tool == "get_power_usage":
+                    power_info = get_power_usage(arguments)
+                    explanation = call_ollama_chat_explain(power_info)
+                    print(f"Explanation for power usage: {explanation}")
+                    return explanation
+            except Exception as e:
+                print(f"Error calling tool {tool}: {e}")
+                return generate_general_info(user_message)
+        else:
+            print(f"Unknown tool '{tool}' received from LLM, defaulting to info response.")
+            return generate_general_info(user_message)
 
-    # print("Unrecognized intent category, defaulting to general info response.")
-    # return generate_general_info(user_message)
+    print("Unrecognized intent category, defaulting to general info response.")
+    return generate_general_info(user_message)
  

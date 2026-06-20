@@ -15,22 +15,23 @@ def call_ollama_generate(prompt: str) -> dict:
     )
     return response.json()
 
-def call_ollama_chat(chat_context_payload: dict) -> dict:
-    response = requests.post(
-        OLLAMA_CHAT_URL,
-        json=chat_context_payload
-    )
-    print(f"Ollama chat response: {response.json()}")
-    return response.json()["message"]["content"]
+# def call_ollama_chat(chat_context_payload: dict) -> dict:
+#     response = requests.post(
+#         OLLAMA_CHAT_URL,
+#         json=chat_context_payload
+#     )
+#     print(f"Ollama chat response: {response.json()}")
+#     return response.json()["message"]["content"]
 
-def call_ollama_chat_old(user_message: str) -> dict:
+def call_ollama_chat(user_message: str) -> dict:
+    print("User message: ", user_message)
     response = requests.post(
         OLLAMA_CHAT_URL,
         json={
             "model": "mistral",
-            "messages": build_tool_classifier_message(user_message=user_message),
+            "messages": [{"role": "user", "content": user_message}],
             "format": "json",  # important
-            "stream": True  # we want to stream for better performance
+            "stream": False  # we want to stream for better performance
         }
     )
     print(f"Ollama chat response: {response.json()}")

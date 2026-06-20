@@ -2,24 +2,46 @@ import json
 import time
 from zabbix_client import get_cpu_usage, get_power_usage
 from fastapi import FastAPI, Request, UploadFile, HTTPException, File, Depends
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+import os
+from supabase import create_client, Client
 from pydantic import BaseModel
 from llm import call_ollama_chat_explain, intent_classification, generate_general_info, parse_action, generate_with_rag, prepare_chat_context_payload, process_llm_call
 import requests  # if calling local llama / ollama
 from rag.ingest import handle_file
 from agent.react_agent import run_react_agent
 from redis_client import connect_redis
-
+from config import SUPABASE_PROJECT_URL, SUPABASE_SERVICE_ROLE_KEY
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 app = FastAPI()
  
+supabase: Client = create_client(SUPABASE_PROJECT_URL, SUPABASE_SERVICE_ROLE_KEY)
 
+# Check if built SPA exists on startup
+spa_exists = os.path.exists("frontend/dist")
+
+if spa_exists:
+    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
-async def get_current_user_id() -> str:
-    return "default_user_123"
+security = HTTPBearer()
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security)
+):
+    token = credentials.credentials
+
+    try:
+        user_response = supabase.auth.get_user(token)
+        return user_response.user
+    except Exception:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid token"
+        )
 
 class ChatRequest(BaseModel):
     message: str
@@ -39,10 +61,14 @@ class ChatMetadata(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def chat_ui(request: Request):
+    if spa_exists:
+        return FileResponse("frontend/dist/index.html")
     return templates.TemplateResponse("chat_v2.html", {"request": request})
 
 @app.get("/agent", response_class=HTMLResponse)
 async def agent_ui(request: Request):
+    if spa_exists:
+        return FileResponse("frontend/dist/index.html")
     return templates.TemplateResponse("agent.html", {"request": request})
 
 @app.post("/agent")
@@ -55,6 +81,8 @@ async def agent(req: ChatRequest):
 
 @app.get("/add-dox", response_class=HTMLResponse)
 async def add_dox_ui(request: Request):
+    if spa_exists:
+        return FileResponse("frontend/dist/index.html")
     return templates.TemplateResponse("add_dox.html", {"request": request})
 
 @app.post("/upload-dox", response_class=HTMLResponse)
@@ -67,20 +95,35 @@ async def add_dox(file: UploadFile = File(...)):
 
 @app.post("/chat")
 async def chat(payload: ChatRequest, 
-    user_id: str = Depends(get_current_user_id)):
+    user: str = Depends(get_current_user)):
     try:
-        print(f"Received chat request with payload: {payload} from user_id: {user_id}")
+        # print(f"Received chat request with payload: {payload} from user_id: {user}")
         session_id = payload.session_id
         user_message = payload.message.strip()
         current_time = time.time()
 
-        print(f"Chat endpoint called with session_id: {session_id}, user_id: {user_id}, message: '{user_message}' at {(current_time)}")
+        print(f"User ID: {user.id}")
+        # print(f"User: {user.name}")
+        # print(f'user role : {user.profile.id}')
+        # print(f'user details {user}')
 
+        profile = (
+                supabase.table("profiles")
+                .select("*")
+                .eq("id", user.id)
+                .single()
+                .execute()
+            )
+        print(f"Profile: {profile}" )
+
+
+
+        return
         if not user_message:
             raise HTTPException(status_code=400, detail="Message cannot be empty")
         
-        history_key = f"chat:{user_id}:{session_id}"
-        sidebar_key = f"chats:{user_id}"
+        history_key = f"chat:{user.id}:{session_id}"
+        sidebar_key = f"chats:{user.id}"
 
         redis_client = connect_redis()
         is_new_chat = await redis_client.exists(history_key) == 0
@@ -130,11 +173,11 @@ async def chat(payload: ChatRequest,
 
 
 # 2. Our temporary simple user dependency
-async def get_current_user_id() -> str:
+async def get_current_user() -> str:
     return "default_user_123"
 
 @app.get("/test-redis")
-async def test_redis(user_id: str = Depends(get_current_user_id)):
+async def test_redis(user_id: str = Depends(get_current_user)):
     try:
         # Define a test key unique to this user
         test_key = f"chats:{user_id}"
@@ -165,7 +208,7 @@ async def test_redis(user_id: str = Depends(get_current_user_id)):
         }
 
 @app.get("/sidebar")
-async def get_sidebar_list(user_id: str = Depends(get_current_user_id)):
+async def get_sidebar_list(user_id: str = Depends(get_current_user)):
     sidebar_key = f"chats:{user_id}"
     
     # 1. Fetch all fields and values from the user's sidebar Redis Hash
@@ -193,7 +236,7 @@ async def get_sidebar_list(user_id: str = Depends(get_current_user_id)):
     return parsed_list
 
 @app.get("/chat-history/{session_id}")
-async def get_chat_history(session_id: str, user_id: str = Depends(get_current_user_id)):
+async def get_chat_history(session_id: str, user_id: str = Depends(get_current_user)):
     history_key = f"chat:{user_id}:{session_id}"
     
     redis_client = connect_redis()

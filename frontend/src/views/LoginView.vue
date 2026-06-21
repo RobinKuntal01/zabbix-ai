@@ -26,8 +26,8 @@ const handleLogin = async () => {
     // 2. Success! The session is now saved in local storage automatically.
     console.log('Logged in user:', data.user)
     
-    // 3. Redirect the user to your main layout or chat interface
-    router.push('/chat') 
+    // 3. Redirect the user to the main app screen
+    router.push('/')
 
   } catch (error) {
     errorMessage.value = error.message || 'Invalid email or password.'

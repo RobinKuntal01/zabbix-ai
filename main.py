@@ -23,10 +23,7 @@ app = FastAPI()
 
 spa_exists = os.path.exists("frontend/dist")
 
-if spa_exists:
-    app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 security = HTTPBearer()
 
@@ -48,15 +45,12 @@ class ChatMetadata(BaseModel):
 
 @app.get("/", response_class=HTMLResponse)
 async def chat_ui(request: Request):
-    if spa_exists:
         return FileResponse("frontend/dist/index.html")
-    return templates.TemplateResponse("chat_v2.html", {"request": request})
 
 @app.get("/agent", response_class=HTMLResponse)
 async def agent_ui(request: Request):
-    if spa_exists:
         return FileResponse("frontend/dist/index.html")
-    return templates.TemplateResponse("agent.html", {"request": request})
+    
 
 @app.post("/agent")
 async def agent(req: ChatRequest):
@@ -68,9 +62,15 @@ async def agent(req: ChatRequest):
 
 @app.get("/add-dox", response_class=HTMLResponse)
 async def add_dox_ui(request: Request):
-    if spa_exists:
-        return FileResponse("frontend/dist/index.html")
-    return templates.TemplateResponse("add_dox.html", {"request": request})
+    return FileResponse("frontend/dist/index.html")
+
+@app.get("/login", response_class=HTMLResponse)
+async def login_ui(request: Request):
+    return FileResponse("frontend/dist/index.html")
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def catch_all_spa(request: Request, full_path: str):
+    return FileResponse("frontend/dist/index.html")
 
 @app.post("/upload-dox", response_class=HTMLResponse)
 async def add_dox(file: UploadFile = File(...)):

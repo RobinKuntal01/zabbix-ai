@@ -151,6 +151,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue'
+import {apiRequest} from '../utils/api'
 
 const theme = ref('light')
 const currentSessionId = ref('')
@@ -180,12 +181,13 @@ function formatTime(timestamp) {
 
 async function loadSidebarChats(loadFirstChat = true) {
   try {
-    const res = await fetch('/sidebar');
-    const data = await res.json();
-    sidebarChats.value = data;
-    
-    if (loadFirstChat && data.length > 0) {
-      switchChatSession(data[0].session_id);
+    const data = await apiRequest('/sidebar');
+    sidebarChats.value = Array.isArray(data) ? data : [];
+
+    if (loadFirstChat && sidebarChats.value.length > 0) {
+      switchChatSession(sidebarChats.value[0].session_id);
+    } else if (loadFirstChat && sidebarChats.value.length === 0) {
+      newChat();
     }
   } catch (error) {
     console.error('Error loading sidebar chats:', error);
@@ -194,16 +196,21 @@ async function loadSidebarChats(loadFirstChat = true) {
 
 async function loadChatHistory(sessionId) {
   if (!sessionId) return;
+
   currentSessionId.value = sessionId;
   try {
-    const res = await fetch(`/chat-history/${encodeURIComponent(sessionId)}`);
-    if (res.ok) {
-      const data = await res.json();
-      messages.value = data;
-      scrollToBottom();
-    }
+    const data = await apiRequest(`/chat-history/${encodeURIComponent(sessionId)}`);
+    messages.value = Array.isArray(data)
+      ? data.map((msg) => ({
+          role: msg.role || 'bot',
+          text: msg.text || '',
+          timestamp: msg.timestamp || Date.now() / 1000,
+        }))
+      : [];
+    scrollToBottom();
   } catch (error) {
     console.error('Error loading chat history:', error);
+    messages.value = [];
   }
 }
 
@@ -278,15 +285,14 @@ async function handleSend() {
   }
 
   try {
-    const response = await fetch("/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ message: text, session_id: currentSessionId.value })
+    const data = await apiRequest('/chat', {
+      method: 'POST',
+      body: JSON.stringify({
+        message: text,
+        session_id: currentSessionId.value
+      })
     });
 
-    const data = await response.json();
     messages.value.push({
       role: 'bot',
       text: data.reply,
@@ -340,7 +346,6 @@ function scrollToBottom() {
 }
 
 onMounted(() => {
-  currentSessionId.value = generateSessionId();
   loadSidebarChats(true);
 });
 </script>

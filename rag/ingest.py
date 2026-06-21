@@ -5,7 +5,6 @@ from pinecone import Pinecone, ServerlessSpec
 from pypdf import PdfReader
 
 from rag.embeddings import get_embedding
-from config import PINECONE_API_KEY
 
 RAG_FOLDER = "rag"
 INDEX_NAME = "company-documents"
@@ -27,7 +26,7 @@ async def handle_file(file):
     extracted_text = clean_text(extracted_text)
     chunks = chunk_text(extracted_text)
 
-    pc = Pinecone(api_key=PINECONE_API_KEY)
+    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
     # Create index if it doesn't exist
     existing_indexes = pc.list_indexes().names()

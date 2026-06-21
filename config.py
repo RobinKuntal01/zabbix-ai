@@ -1,5 +1,11 @@
 
+import os
+from dotenv import load_dotenv
 
-JOKE_URL = "https://v2.jokeapi.dev/joke/programming?type=single"
-OLLAMA_GENERATE_URL = "http://localhost:11434/api/generate"
-OLLAMA_CHAT_URL = "http://localhost:11434/api/chat"
+load_dotenv()
+
+class Settings:
+    SUPABASE_URL: str = os.getenv("SUPABASE_PROJECT_URL", "")
+    SUPABASE_KEY: str = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+settings = Settings()

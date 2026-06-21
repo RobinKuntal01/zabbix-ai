@@ -11,8 +11,7 @@ Tools are simple stubs with predefined output for now.
 import json
 import re
 import requests
-from config import OLLAMA_CHAT_URL
-
+import os
 # ──────────────────────────────────────────────
 # 1.  TOOL REGISTRY
 #     Each tool is a plain Python function.
@@ -178,7 +177,7 @@ def _dispatch(tool_name: str, tool_input: dict) -> str:
 
 def _call_llm(messages: list[dict]) -> str:
     response = requests.post(
-        OLLAMA_CHAT_URL,
+        os.getenv("OLLAMA_CHAT_URL"),
         json={
             "model": "mistral",
             "messages": messages,

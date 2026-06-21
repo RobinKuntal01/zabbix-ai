@@ -1,14 +1,16 @@
 from rag.embeddings import get_embedding
-from rag.vector_store import VectorStore
 from pinecone import Pinecone
-from config import PINECONE_API_KEY
-LLM_MODEL = "mistral"
+import os
+from dotenv import load_dotenv
 
+load_dotenv()
+
+LLM_MODEL = "mistral"
 
 def answer_with_rag(query):
     """Answer a query using Retrieval-Augmented Generation (RAG) approach."""
     query_embedding = get_embedding(query)
-    pc = Pinecone(api_key=PINECONE_API_KEY)
+    pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY", ""))
     index = pc.Index("company-documents")
 
     results = index.query(

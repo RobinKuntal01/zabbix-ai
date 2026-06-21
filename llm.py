@@ -1,12 +1,12 @@
 import json
 from zabbix_client import get_cpu_usage, get_power_usage
 from prompt import build_intent_prompt, build_general_prompt, build_tool_classifier_message, explain_realtime_metrics, rag_prompt
-from config import OLLAMA_GENERATE_URL, JOKE_URL, OLLAMA_CHAT_URL
 import requests
+import os
 from rag.rag_pipeline import answer_with_rag
 
 def call_ollama_generate(prompt: str) -> dict:
-    response = requests.post(OLLAMA_GENERATE_URL,
+    response = requests.post(os.getenv("OLLAMA_GENERATE_URL"),
         json={
             "model": "mistral",
             "prompt": prompt,
@@ -26,7 +26,7 @@ def call_ollama_generate(prompt: str) -> dict:
 def call_ollama_chat(user_message: str) -> dict:
     print("User message: ", user_message)
     response = requests.post(
-        OLLAMA_CHAT_URL,
+        os.getenv("OLLAMA_CHAT_URL"),
         json={
             "model": "mistral",
             "messages": [{"role": "user", "content": user_message}],
@@ -87,7 +87,7 @@ def generate_general_info(chat_context_payload: dict) -> str:
 
 def call_ollama_chat_explain(real_time_metric: str) -> str:
     response = requests.post(
-        OLLAMA_CHAT_URL,
+        os.getenv("OLLAMA_CHAT_URL"),
         json={
             "model": "mistral",
             "messages": explain_realtime_metrics(real_time_metric),
@@ -107,7 +107,7 @@ def generate_with_rag(query: str) -> str:
 
     res_rag_prompt = rag_prompt(query, context)
     response = requests.post(
-        OLLAMA_CHAT_URL,
+        os.getenv("OLLAMA_CHAT_URL"),
         json={
             "model": "mistral",
             "messages": [{"role": "user", "content": res_rag_prompt}],

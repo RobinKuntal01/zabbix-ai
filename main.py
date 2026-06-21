@@ -1,5 +1,7 @@
 import json
+import profile
 import time
+import uuid
 from zabbix_client import get_cpu_usage, get_power_usage
 from fastapi import FastAPI, Request, UploadFile, HTTPException, File, Depends
 from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
@@ -13,13 +15,12 @@ import requests  # if calling local llama / ollama
 from rag.ingest import handle_file
 from agent.react_agent import run_react_agent
 from redis_client import connect_redis
-from config import SUPABASE_PROJECT_URL, SUPABASE_SERVICE_ROLE_KEY
+from db.database import get_supabase_user, supabase_admin
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-app = FastAPI()
- 
-supabase: Client = create_client(SUPABASE_PROJECT_URL, SUPABASE_SERVICE_ROLE_KEY)
+from db.queries import Queries
 
-# Check if built SPA exists on startup
+app = FastAPI()
+
 spa_exists = os.path.exists("frontend/dist")
 
 if spa_exists:
@@ -28,20 +29,6 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 security = HTTPBearer()
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-):
-    token = credentials.credentials
-
-    try:
-        user_response = supabase.auth.get_user(token)
-        return user_response.user
-    except Exception:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid token"
-        )
 
 class ChatRequest(BaseModel):
     message: str
@@ -95,35 +82,35 @@ async def add_dox(file: UploadFile = File(...)):
 
 @app.post("/chat")
 async def chat(payload: ChatRequest, 
-    user: str = Depends(get_current_user)):
+    supabase_auth: dict = Depends(get_supabase_user)):
     try:
+        db = supabase_auth["client"]
+        token = supabase_auth["token"]
+        token_details = db.auth.get_claims(jwt=token)
+
+        claims = token_details["claims"]
+        print(f"Token claims: {claims}")
+        current_user_id = claims.get("sub")  # 'sub' is the standard JWT key for User UUID
+        company_id = claims.get("company_id")
+
+        if not current_user_id or not company_id or company_id == "null":
+            raise HTTPException(status_code=401, detail="Unauthorized: Tenant identity missing from session token.")
+
         # print(f"Received chat request with payload: {payload} from user_id: {user}")
-        session_id = payload.session_id
         user_message = payload.message.strip()
         current_time = time.time()
+        session_id = payload.session_id
 
-        print(f"User ID: {user.id}")
-        # print(f"User: {user.name}")
-        # print(f'user role : {user.profile.id}')
-        # print(f'user details {user}')
+        print(f'company_id: {company_id}, current_user_id: {current_user_id}, user_message: {user_message}')
 
-        profile = (
-                supabase.table("profiles")
-                .select("*")
-                .eq("id", user.id)
-                .single()
-                .execute()
-            )
-        print(f"Profile: {profile}" )
+        redis_key = f"tenant:{company_id}:user:{current_user_id}:chats"
+        print(f"Target Redis Hash Key: {redis_key}")
 
+        history_key = f"tenant:{company_id}:user:{current_user_id}:chats:{session_id}"
+        sidebar_key = f"tenant:{company_id}:user:{current_user_id}"
 
-
-        return
-        if not user_message:
-            raise HTTPException(status_code=400, detail="Message cannot be empty")
-        
-        history_key = f"chat:{user.id}:{session_id}"
-        sidebar_key = f"chats:{user.id}"
+        print(f"Target Redis List Key for chat history: {history_key}")
+        print(f"Target Redis Hash Key for sidebar: {sidebar_key}")
 
         redis_client = connect_redis()
         is_new_chat = await redis_client.exists(history_key) == 0
@@ -137,7 +124,7 @@ async def chat(payload: ChatRequest,
         await redis_client.rpush(history_key, user_msg_obj.model_dump_json())
 
         print(f"Received user message: {user_message}")
-
+        return 
         chat_context_payload = prepare_chat_context_payload(user_message, chat_context)
 
         ai_reply_text = process_llm_call(user_message)
@@ -172,34 +159,56 @@ async def chat(payload: ChatRequest,
         raise HTTPException(status_code=500, detail="Internal server error")
 
 
-# 2. Our temporary simple user dependency
-async def get_current_user() -> str:
-    return "default_user_123"
-
 @app.get("/test-redis")
-async def test_redis(user_id: str = Depends(get_current_user)):
+async def test_redis():
     try:
-        # Define a test key unique to this user
-        test_key = f"chats:{user_id}"
-        
-        # Write a sample payload to a Redis Hash
-        sample_meta = {
-            "session_id": "test-uuid-0000",
-            "title": "My First Redis Chat",
-            "updated_at": 1717070400.0
-        }
-        # print(f'test-redis: {connect_redis()}')
-        # Save it into Redis
-        redis_client = connect_redis()
-        await redis_client.hset(test_key, "test-uuid-0000", json.dumps(sample_meta))
-        
-        # Instantly read it back to confirm it saved perfectly
-        saved_data = await redis_client.hget(test_key, "test-uuid-0000")
-        
-        return {
-            "status": "Success! FastAPI is connected to Windows Redis.",
-            "data_read_from_redis": json.loads(saved_data)
-        }
+       
+        # 1. Fetch data from Supabase
+        # print(f"User response from Supabase: {auth_response}")
+        # response = (
+        #     db.table("company")
+        #     .select("id, company_name, profiles!inner(id)") # Pull the company ID
+        #     .eq("profiles.id", current_user_id)
+        #     .execute()
+        # )
+        # object_queries = Queries()
+        # res_company = await object_queries.get_company_by_user_id(1, db=db)
+        res_company = supabase_admin.table("company").select("*").eq("id", 1).execute()
+
+        print(f"Supabase response {res_company}")
+        return
+        # Ensure we actually got data back to prevent IndexError
+        if res_company.data:
+            company_id = res_company.data[0]['id']      # Safely use the integer/UUID ID, not the name
+            user_uuid = current_user_id
+            session_uuid = str(uuid.uuid4())         # Generate a fresh UUID for this unique chat session
+            
+            # 2. Structure the proper Redis Key
+            # Format: tenant:{company_id}:user:{user_uuid}:chats
+            redis_key = f"tenant:{company_id}:user:{user_uuid}:chats"
+            print(f"Target Redis Hash Key: {redis_key}")
+            
+            # 3. Create clean metadata payload
+            sample_meta = {
+                "session_id": session_uuid,          # This is clean: just the UUID string
+                "title": "My First Redis Chat",
+                "updated_at": time.time()            # Generates current timestamp dynamically
+            }
+            
+            # 4. Save to Redis
+            redis_client = connect_redis()
+            
+            # HSET stores it perfectly: 
+            # Key -> tenant:1:user:UUID:chats
+            # Field -> session_uuid (The specific chat ID)
+            # Value -> JSON metadata string
+            await redis_client.hset(redis_key, session_uuid, json.dumps(sample_meta))
+            
+            print(f"Successfully saved session {session_uuid} under user hash.")
+        else:
+            print("No company/profile found for this user.")
+
+
     except Exception as e:
         return {
             "status": "Connection Failed",
@@ -208,8 +217,31 @@ async def test_redis(user_id: str = Depends(get_current_user)):
         }
 
 @app.get("/sidebar")
-async def get_sidebar_list(user_id: str = Depends(get_current_user)):
-    sidebar_key = f"chats:{user_id}"
+async def get_sidebar_list(supabase_auth: dict = Depends(get_supabase_user)):
+    db = supabase_auth["client"]
+    token = supabase_auth["token"]
+
+    auth_response = db.auth.get_user(jwt=token)
+    if not auth_response or not auth_response.user:
+        raise HTTPException(status_code=401, detail="User session invalid")
+
+    obj_queries = Queries()
+    current_user_id = auth_response.user.id
+    print(f"Current user ID: {current_user_id}")
+    res_profile = await obj_queries.get_user_by_id(current_user_id, db=db)
+
+    print(f"Profile: {res_profile}" )
+    
+    get_tenant_id = await obj_queries.get_company_by_user_id(current_user_id, db=db)
+    if not get_tenant_id:
+        raise HTTPException(status_code=404, detail="Tenant not found for user")
+
+
+    print(f"Tenant ID for user {current_user_id}: {get_tenant_id}")
+    
+    tenant_id = get_tenant_id.data['id']  # Assuming the response structure contains 'data' with 'id'
+    company_id = tenant_id
+    sidebar_key = f"tenant:{company_id}:user:{current_user_id}"
     
     # 1. Fetch all fields and values from the user's sidebar Redis Hash
     # This returns a dictionary like: {"session-uuid-1": "{'title': '...', 'updated_at': ...}"}
@@ -236,7 +268,15 @@ async def get_sidebar_list(user_id: str = Depends(get_current_user)):
     return parsed_list
 
 @app.get("/chat-history/{session_id}")
-async def get_chat_history(session_id: str, user_id: str = Depends(get_current_user)):
+async def get_chat_history(session_id: str, supabase_auth: dict = Depends(get_supabase_user)):
+    user_client = supabase_auth["client"]
+    token = supabase_auth["token"]
+
+    auth_response = user_client.auth.get_user(jwt=token)
+    if not auth_response or not auth_response.user:
+        raise HTTPException(status_code=401, detail="User session invalid")
+
+    user_id = auth_response.user.id
     history_key = f"chat:{user_id}:{session_id}"
     
     redis_client = connect_redis()

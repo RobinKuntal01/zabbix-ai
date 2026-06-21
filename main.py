@@ -103,9 +103,6 @@ async def chat(payload: ChatRequest,
 
         print(f'company_id: {company_id}, current_user_id: {current_user_id}, user_message: {user_message}')
 
-        redis_key = f"tenant:{company_id}:user:{current_user_id}:chats"
-        print(f"Target Redis Hash Key: {redis_key}")
-
         history_key = f"tenant:{company_id}:user:{current_user_id}:chats:{session_id}"
         sidebar_key = f"tenant:{company_id}:user:{current_user_id}"
 
